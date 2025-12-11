@@ -1,0 +1,208 @@
+return {
+    -- General
+    ["report_system"] = "Report System",
+    ["reports"] = "Reports",
+    ["report"] = "Report",
+    ["close"] = "Schließen",
+    ["cancel"] = "Abbrechen",
+    ["confirm"] = "Bestätigen",
+    ["submit"] = "Absenden",
+    ["delete"] = "Löschen",
+    ["save"] = "Speichern",
+    ["search"] = "Suchen",
+    ["filter"] = "Filter",
+    ["all"] = "Alle",
+    ["none"] = "Keine",
+    ["loading"] = "Laden...",
+    ["no_results"] = "Keine Ergebnisse gefunden",
+
+    -- Report Status
+    ["status_open"] = "Offen",
+    ["status_claimed"] = "In Bearbeitung",
+    ["status_resolved"] = "Gelöst",
+
+    -- Report Categories
+    ["category_general"] = "Allgemein",
+    ["category_bug"] = "Bug Report",
+    ["category_player"] = "Spieler Report",
+    ["category_question"] = "Frage",
+    ["category_other"] = "Sonstiges",
+
+    -- Create Report
+    ["create_report"] = "Report erstellen",
+    ["report_subject"] = "Betreff",
+    ["report_subject_placeholder"] = "Kurze Zusammenfassung deines Problems",
+    ["report_category"] = "Kategorie",
+    ["report_category_placeholder"] = "Wähle eine Kategorie",
+    ["report_description"] = "Beschreibung",
+    ["report_description_placeholder"] = "Beschreibe dein Problem genauer...",
+    ["report_created"] = "Report erfolgreich erstellt",
+    ["report_creation_failed"] = "Report konnte nicht erstellt werden",
+
+    -- View Reports
+    ["my_reports"] = "Meine Reports",
+    ["active_reports"] = "Aktive Reports",
+    ["resolved_reports"] = "Gelöste Reports",
+    ["no_reports"] = "Keine Reports gefunden",
+    ["no_active_reports"] = "Du hast keine aktiven Reports",
+    ["report_details"] = "Report Details",
+    ["created_at"] = "Erstellt",
+    ["updated_at"] = "Aktualisiert",
+    ["resolved_at"] = "Gelöst",
+
+    -- Report Actions
+    ["claim_report"] = "Übernehmen",
+    ["unclaim_report"] = "Freigeben",
+    ["resolve_report"] = "Lösen",
+    ["delete_report"] = "Report löschen",
+    ["delete_report_confirm"] = "Bist du sicher, dass du diesen Report löschen möchtest?",
+    ["report_claimed"] = "Report übernommen",
+    ["report_unclaimed"] = "Report freigegeben",
+    ["report_resolved"] = "Report gelöst",
+    ["report_deleted"] = "Report gelöscht",
+
+    -- Admin Actions
+    ["admin_actions"] = "Admin Aktionen",
+    ["teleport_to"] = "Teleportieren",
+    ["bring_player"] = "Herholen",
+    ["heal_player"] = "Heilen",
+    ["revive_player"] = "Wiederbeleben",
+    ["freeze_player"] = "Einfrieren",
+    ["spectate_player"] = "Beobachten",
+    ["kick_player"] = "Kicken",
+    ["ragdoll_player"] = "Ragdoll",
+    ["screenshot_player"] = "Screenshot",
+    ["teleported_to_player"] = "Zum Spieler teleportiert",
+    ["teleported_by_admin"] = "Du wurdest von einem Admin teleportiert",
+    ["player_brought"] = "Spieler zu dir geholt",
+    ["player_healed"] = "Spieler geheilt",
+    ["healed_by_admin"] = "Du wurdest von einem Admin geheilt",
+    ["player_revived"] = "Spieler wiederbelebt",
+    ["revived_by_admin"] = "Du wurdest von einem Admin wiederbelebt",
+    ["player_frozen"] = "Spieler eingefroren",
+    ["player_unfrozen"] = "Spieler aufgetaut",
+    ["you_were_frozen"] = "Du wurdest von einem Admin eingefroren",
+    ["you_were_unfrozen"] = "Du wurdest aufgetaut",
+    ["player_kicked"] = "Spieler gekickt",
+    ["kicked_reason"] = "Du wurdest von Admin %s gekickt",
+    ["player_ragdolled"] = "Spieler zu Boden geworfen",
+    ["spectating_player"] = "Beobachte %s",
+    ["spectate_stopped"] = "Beobachtung beendet",
+    ["screenshot_requested"] = "Screenshot angefordert",
+    ["screenshot_received"] = "Screenshot von %s erhalten",
+    ["screenshot_unavailable"] = "Screenshot-System nicht verfügbar",
+    ["player_offline"] = "Spieler ist offline",
+
+    -- Chat
+    ["chat"] = "Chat",
+    ["send_message"] = "Senden",
+    ["type_message"] = "Nachricht eingeben...",
+    ["message_sent"] = "Nachricht gesendet",
+    ["new_message"] = "Neue Nachricht in Report #%d",
+
+    -- Admin Panel
+    ["admin_panel"] = "Admin Panel",
+    ["staff_overview"] = "Staff Übersicht",
+    ["filter_by_status"] = "Nach Status filtern",
+    ["filter_by_category"] = "Nach Kategorie filtern",
+    ["search_by_id"] = "Nach ID suchen",
+    ["search_by_player"] = "Nach Spieler suchen",
+    ["claimed_by"] = "Übernommen von",
+    ["assigned_to"] = "Zugewiesen an",
+    ["no_one"] = "Niemand",
+
+    -- Notifications
+    ["new_report"] = "Neuer Report",
+    ["new_report_from"] = "Neuer Report von %s",
+    ["report_updated"] = "Report aktualisiert",
+    ["report_status_changed"] = "Report #%d Status geändert zu %s",
+
+    -- Errors
+    ["error_generic"] = "Ein Fehler ist aufgetreten",
+    ["error_cooldown"] = "Bitte warte %d Sekunden bevor du einen weiteren Report erstellst",
+    ["error_max_reports"] = "Du hast die maximale Anzahl aktiver Reports erreicht (%d)",
+    ["error_invalid_category"] = "Ungültige Kategorie ausgewählt",
+    ["error_subject_required"] = "Betreff ist erforderlich",
+    ["error_subject_too_long"] = "Betreff ist zu lang (max %d Zeichen)",
+    ["error_description_too_long"] = "Beschreibung ist zu lang (max %d Zeichen)",
+    ["error_not_found"] = "Report nicht gefunden",
+    ["error_no_permission"] = "Du hast keine Berechtigung dafür",
+    ["error_already_claimed"] = "Dieser Report ist bereits übernommen",
+    ["error_not_claimed"] = "Dieser Report ist nicht übernommen",
+    ["error_cannot_delete"] = "Du kannst diesen Report nicht löschen",
+    ["error_message_empty"] = "Nachricht darf nicht leer sein",
+
+    -- Action Groups
+    ["teleport"] = "Teleport",
+    ["health"] = "Gesundheit",
+    ["moderation"] = "Moderation",
+
+    -- Theme
+    ["theme"] = "Design",
+    ["theme_dark"] = "Dunkel",
+    ["theme_light"] = "Hell",
+
+    -- Misc
+    ["online"] = "Online",
+    ["offline"] = "Offline",
+    ["player"] = "Spieler",
+    ["admin"] = "Admin",
+    ["priority"] = "Priorität",
+    ["low"] = "Niedrig",
+    ["normal"] = "Normal",
+    ["high"] = "Hoch",
+    ["urgent"] = "Dringend",
+
+    -- Priority Labels
+    ["priority_low"] = "Niedrig",
+    ["priority_normal"] = "Normal",
+    ["priority_high"] = "Hoch",
+    ["priority_urgent"] = "Dringend",
+    ["priority_updated"] = "Priorität aktualisiert",
+
+    -- Admin Notes
+    ["admin_notes"] = "Admin Notizen",
+    ["player_notes"] = "Spieler Notizen",
+    ["internal_only"] = "nur intern sichtbar",
+    ["no_notes"] = "Noch keine Notizen",
+    ["add_note_placeholder"] = "Notiz hinzufügen...",
+    ["add_player_note_placeholder"] = "Notiz über diesen Spieler hinzufügen...",
+    ["note_added"] = "Notiz hinzugefügt",
+    ["note_deleted"] = "Notiz gelöscht",
+    ["error_note_empty"] = "Notiz darf nicht leer sein",
+    ["error_note_too_long"] = "Notiz ist zu lang (max %d Zeichen)",
+
+    -- Player History
+    ["report_history"] = "Report Historie",
+    ["total_reports"] = "Gesamt Reports",
+    ["open_reports"] = "Offen",
+    ["resolved_reports"] = "Gelöst",
+    ["notes"] = "Notizen",
+    ["no_report_history"] = "Keine Report Historie",
+    ["no_player_notes"] = "Keine Notizen zu diesem Spieler",
+    ["view_player_info"] = "Spieler Info anzeigen",
+    ["show_resolved"] = "Gelöste anzeigen",
+
+    -- System Messages (Admin Actions)
+    ["action_teleport_to"] = "%s hat sich zum Spieler teleportiert",
+    ["action_bring_player"] = "%s hat den Spieler hergeholt",
+    ["action_heal_player"] = "%s hat den Spieler geheilt",
+    ["action_revive_player"] = "%s hat den Spieler wiederbelebt",
+    ["action_freeze_player"] = "%s hat den Spieler eingefroren/aufgetaut",
+    ["action_kick_player"] = "%s hat den Spieler gekickt",
+    ["action_ragdoll_player"] = "%s hat Ragdoll beim Spieler ausgelöst",
+    ["action_spectate_player"] = "%s beobachtet jetzt den Spieler",
+    ["action_screenshot_player"] = "%s hat Screenshot vom Spieler gemacht",
+
+    -- Statistics
+    ["statistics"] = "Statistiken",
+    ["total_reports"] = "Gesamt Reports",
+    ["reports_by_status"] = "Reports nach Status",
+    ["reports_by_category"] = "Reports nach Kategorie",
+    ["reports_by_priority"] = "Reports nach Priorität",
+    ["admin_leaderboard"] = "Admin Rangliste",
+    ["recent_activity"] = "Letzte Aktivität (7 Tage)",
+    ["avg_time"] = "Durchschn.",
+    ["resolved"] = "gelöst",
+    ["no_data"] = "Keine Daten verfügbar"
+}
