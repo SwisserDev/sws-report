@@ -60,7 +60,7 @@
 Config = {} ---@type ConfigType
 
 -- General Settings
-Config.Debug = true
+Config.Debug = false
 Config.Locale = "en"
 Config.Command = "report"
 
