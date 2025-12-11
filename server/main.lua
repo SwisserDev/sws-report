@@ -201,6 +201,61 @@ AddEventHandler("playerDropped", function(reason)
     Admins[source] = nil
 end)
 
+---Compare semantic versions
+---@param current string Current version (e.g. "1.0.0")
+---@param latest string Latest version (e.g. "1.0.1")
+---@return boolean isOutdated True if current < latest
+local function isVersionOutdated(current, latest)
+    local function parseVersion(v)
+        local major, minor, patch = v:match("^(%d+)%.(%d+)%.(%d+)")
+        return tonumber(major) or 0, tonumber(minor) or 0, tonumber(patch) or 0
+    end
+
+    local curMajor, curMinor, curPatch = parseVersion(current)
+    local latMajor, latMinor, latPatch = parseVersion(latest)
+
+    if latMajor > curMajor then return true end
+    if latMajor == curMajor and latMinor > curMinor then return true end
+    if latMajor == curMajor and latMinor == curMinor and latPatch > curPatch then return true end
+
+    return false
+end
+
+---Check for updates from GitHub
+local function checkForUpdates()
+    local currentVersion = GetResourceMetadata(RESOURCE_NAME, "version", 0) or "0.0.0"
+    local repoUrl = "https://raw.githubusercontent.com/SwisserDev/sws-report/main/fxmanifest.lua"
+
+    PerformHttpRequest(repoUrl, function(statusCode, response)
+        if statusCode ~= 200 or not response then
+            PrintError("Failed to check for updates")
+            return
+        end
+
+        local latestVersion = response:match('\nversion%s*"([^"]+)"')
+        if not latestVersion then
+            PrintError("Could not parse version from GitHub")
+            return
+        end
+
+        if isVersionOutdated(currentVersion, latestVersion) then
+            local boxWidth = 56
+            local versionText = ("  Current: v%s  →  Latest: v%s"):format(currentVersion, latestVersion)
+            local versionVisualLen = 26 + #currentVersion + #latestVersion 
+            local versionPadding = string.rep(" ", boxWidth - versionVisualLen)
+
+            print("^3╔════════════════════════════════════════════════════════╗^0")
+            print("^3║^0             ^1UPDATE AVAILABLE^0 - ^5sws-report^0              ^3║^0")
+            print("^3╠════════════════════════════════════════════════════════╣^0")
+            print("^3║^0" .. versionText .. versionPadding .. "^3║^0")
+            print("^3║^0  Download: ^4github.com/SwisserDev/sws-report/releases^0   ^3║^0")
+            print("^3╚════════════════════════════════════════════════════════╝^0")
+        else
+            PrintInfo(("Running latest version v%s"):format(currentVersion))
+        end
+    end, "GET")
+end
+
 ---Resource start handler
 AddEventHandler("onResourceStart", function(resourceName)
     if resourceName ~= RESOURCE_NAME then return end
@@ -210,6 +265,8 @@ AddEventHandler("onResourceStart", function(resourceName)
     LoadReportsFromDatabase()
 
     PrintInfo(("Loaded %d active reports"):format(GetActiveReportCount()))
+
+    checkForUpdates()
 end)
 
 ---Resource stop handler
