@@ -18,7 +18,7 @@ jobs:
       - name: Extract version from fxmanifest
         id: version
         run: |
-          VERSION=$(grep -oP 'version\s*"\K[^"]+' fxmanifest.lua)
+          VERSION=$(grep -oP '^version\s*"\K[^"]+' fxmanifest.lua)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version: $VERSION"
 
