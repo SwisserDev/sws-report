@@ -54,9 +54,16 @@ jobs:
         run: |
           zip -r sws-report-v${{ steps.version.outputs.version }}.zip . \
             -x ".git/*" \
-            -x "node_modules/*" \
+            -x ".github/*" \
+            -x "screenshots/*" \
             -x "web/node_modules/*" \
-            -x ".github/*"
+            -x "web/src/*" \
+            -x "web/public/*" \
+            -x "web/.next/*" \
+            -x "web/*.json" \
+            -x "web/*.ts" \
+            -x "web/*.mjs" \
+            -x "web/README.md"
 
       - name: Create Tag and Release
         if: steps.check_tag.outputs.exists == 'false'
