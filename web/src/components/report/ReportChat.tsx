@@ -15,7 +15,7 @@ interface ReportChatProps {
 }
 
 export function ReportChat({ report }: ReportChatProps) {
-  const { locale } = useReportStore()
+  const { locale, voiceMessagesEnabled } = useReportStore()
   const { sendMessage, getMessages } = useNuiActions()
 
   const [message, setMessage] = useState("")
@@ -135,12 +135,14 @@ export function ReportChat({ report }: ReportChatProps) {
             onKeyDown={handleKeyDown}
             className="flex-1 py-2"
           />
-          <VoiceRecorder
-            onSend={handleVoiceSend}
-            maxDuration={60}
-            disabled={report.status === "resolved"}
-            locale={locale}
-          />
+          {voiceMessagesEnabled && (
+            <VoiceRecorder
+              onSend={handleVoiceSend}
+              maxDuration={60}
+              disabled={report.status === "resolved"}
+              locale={locale}
+            />
+          )}
           <Button variant="primary" onClick={handleSend} disabled={!message.trim()} className="h-auto px-4">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />

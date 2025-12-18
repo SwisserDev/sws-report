@@ -13,6 +13,9 @@ local playerName = nil
 ---@type string Current theme
 local currentTheme = Config.UI.defaultTheme
 
+---@type boolean Voice messages enabled
+local voiceMessagesEnabled = false
+
 ---@type ReportData[] Player's reports
 local myReports = {}
 
@@ -41,7 +44,8 @@ local function openUI(forceAdmin)
                 name = playerName,
                 isAdmin = isAdmin
             },
-            locale = CurrentLocale
+            locale = CurrentLocale,
+            voiceMessagesEnabled = voiceMessagesEnabled
         }
     })
 
@@ -208,8 +212,11 @@ RegisterNetEvent("sws-report:setPlayerData", function(data)
     playerIdentifier = data.identifier
     playerName = data.name
     isAdmin = data.isAdmin
+    voiceMessagesEnabled = data.voiceMessagesEnabled or false
 
-    DebugPrint(("Player data set: %s (%s) - Admin: %s"):format(playerName, playerIdentifier, tostring(isAdmin)))
+    DebugPrint(("Player data set: %s (%s) - Admin: %s - Voice: %s"):format(
+        playerName, playerIdentifier, tostring(isAdmin), tostring(voiceMessagesEnabled)
+    ))
 end)
 
 RegisterNetEvent("sws-report:setReports", function(reports)

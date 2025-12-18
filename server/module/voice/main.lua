@@ -133,6 +133,11 @@ RegisterNetEvent("sws-report:sendVoiceMessage", function(reportId, audioBase64, 
         return
     end
 
+    if not VoiceMessagesAvailable then
+        NotifyPlayer(source, L("error_voice_disabled"), "error")
+        return
+    end
+
     if not Config.VoiceMessages.enabled then
         NotifyPlayer(source, L("error_voice_disabled"), "error")
         return

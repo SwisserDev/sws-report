@@ -12,6 +12,9 @@ interface ReportState {
   showPlayerInfo: boolean
   selectedPlayerId: string | null
 
+  // Feature Flags
+  voiceMessagesEnabled: boolean
+
   // Data
   playerData: PlayerData | null
   myReports: Report[]
@@ -40,6 +43,7 @@ interface ReportState {
   setIsCreatingReport: (creating: boolean) => void
   setShowPlayerInfo: (show: boolean) => void
   setSelectedPlayerId: (id: string | null) => void
+  setVoiceMessagesEnabled: (enabled: boolean) => void
   setPlayerData: (data: PlayerData) => void
   setMyReports: (reports: Report[]) => void
   setAllReports: (reports: Report[]) => void
@@ -86,6 +90,7 @@ export const useReportStore = create<ReportState>((set, get) => ({
   isCreatingReport: false,
   showPlayerInfo: false,
   selectedPlayerId: null,
+  voiceMessagesEnabled: false,
   playerData: null,
   myReports: [],
   allReports: [],
@@ -110,6 +115,7 @@ export const useReportStore = create<ReportState>((set, get) => ({
   setIsCreatingReport: (creating) => set({ isCreatingReport: creating }),
   setShowPlayerInfo: (show) => set({ showPlayerInfo: show }),
   setSelectedPlayerId: (id) => set({ selectedPlayerId: id }),
+  setVoiceMessagesEnabled: (enabled) => set({ voiceMessagesEnabled: enabled }),
 
   // Data Actions
   setPlayerData: (data) => set({ playerData: data }),
