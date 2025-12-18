@@ -29,6 +29,7 @@
 ---@field reportResolved boolean Log resolved reports
 ---@field reportDeleted boolean Log deleted reports
 ---@field chatMessage boolean Log chat messages
+---@field voiceMessage boolean Log voice messages
 ---@field adminAction boolean Log admin actions
 
 ---@class DiscordConfig
@@ -43,6 +44,11 @@
 ---@field defaultTheme "dark" | "light" Default theme
 ---@field position string UI position
 
+---@class VoiceMessageConfig
+---@field enabled boolean Enable voice messages in chat
+---@field maxDurationSeconds integer Maximum recording duration in seconds
+---@field maxFileSizeKB integer Maximum file size in KB
+
 ---@class ConfigType
 ---@field Debug boolean Enable debug logging
 ---@field Locale string Default locale
@@ -56,6 +62,7 @@
 ---@field Sounds SoundConfig Sound configuration
 ---@field Discord DiscordConfig Discord webhook configuration
 ---@field UI UIConfig UI configuration
+---@field VoiceMessages VoiceMessageConfig Voice message configuration
 
 Config = {} ---@type ConfigType
 
@@ -113,6 +120,7 @@ Config.Discord = {
         reportResolved = true,
         reportDeleted = true,
         chatMessage = false,    -- Disabled by default (can be spammy)
+        voiceMessage = true,
         adminAction = true
     },
 
@@ -131,4 +139,11 @@ Config.Discord = {
 Config.UI = {
     defaultTheme = "dark",
     position = "center"
+}
+
+-- Voice Message Settings
+Config.VoiceMessages = {
+    enabled = true,
+    maxDurationSeconds = 60,
+    maxFileSizeKB = 7500    -- 7.5MB to stay under Discord 8MB limit
 }

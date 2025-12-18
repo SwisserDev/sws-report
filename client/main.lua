@@ -127,6 +127,11 @@ RegisterNUICallback("sendMessage", function(data, cb)
     cb("ok")
 end)
 
+RegisterNUICallback("sendVoiceMessage", function(data, cb)
+    TriggerServerEvent("sws-report:sendVoiceMessage", data.reportId, data.audioData, data.duration)
+    cb("ok")
+end)
+
 RegisterNUICallback("getMessages", function(data, cb)
     TriggerServerEvent("sws-report:getMessages", data.reportId)
     cb("ok")

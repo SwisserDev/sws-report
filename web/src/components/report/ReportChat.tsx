@@ -1,10 +1,13 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import type { Report } from "@/types"
 import { useReportStore } from "@/stores/reportStore"
 import { useNuiActions } from "@/hooks/useNui"
+import { fetchNui } from "@/lib/nui"
 import { Button, Input } from "@/components/ui"
+import { VoiceRecorder } from "./VoiceRecorder"
+import { AudioPlayer } from "./AudioPlayer"
 import { formatTimestamp, cn } from "@/lib/utils"
 
 interface ReportChatProps {
@@ -44,8 +47,17 @@ export function ReportChat({ report }: ReportChatProps) {
     }
   }
 
+  const handleVoiceSend = useCallback((audioData: string, duration: number) => {
+    fetchNui("sendVoiceMessage", {
+      reportId: report.id,
+      audioData,
+      duration
+    })
+  }, [report.id])
+
   const isUserMessage = (senderType: string) => senderType === "player"
   const isSystemMessage = (senderType: string) => senderType === "system"
+  const isVoiceMessage = (messageType?: string) => messageType === "voice"
 
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
@@ -81,13 +93,25 @@ export function ReportChat({ report }: ReportChatProps) {
                       : "bg-success/10 border border-success/20 text-text-primary rounded-bl-sm"
                   )}
                 >
-                  {msg.message}
+                  {isVoiceMessage(msg.messageType) && msg.audioUrl ? (
+                    <AudioPlayer
+                      src={msg.audioUrl}
+                      duration={msg.audioDuration}
+                    />
+                  ) : (
+                    msg.message
+                  )}
                 </div>
                 <span className="text-[10px] xl:text-xs text-text-tertiary mt-1 flex items-center gap-1">
                   {msg.senderName}
                   {msg.senderType === "admin" && (
                     <svg className="w-3 h-3 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  )}
+                  {isVoiceMessage(msg.messageType) && (
+                    <svg className="w-3 h-3 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                     </svg>
                   )}
                   <span>·</span>
@@ -110,6 +134,12 @@ export function ReportChat({ report }: ReportChatProps) {
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
             className="flex-1 py-2"
+          />
+          <VoiceRecorder
+            onSend={handleVoiceSend}
+            maxDuration={60}
+            disabled={report.status === "resolved"}
+            locale={locale}
           />
           <Button variant="primary" onClick={handleSend} disabled={!message.trim()} className="h-auto px-4">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -123,7 +123,9 @@ RegisterNetEvent("sws-report:getMessages", function(reportId)
     end
 
     local messages = MySQL.query.await([[
-        SELECT * FROM report_messages
+        SELECT id, report_id, sender_id, sender_name, sender_type,
+               message, message_type, audio_url, audio_duration, created_at
+        FROM report_messages
         WHERE report_id = ?
         ORDER BY created_at ASC
     ]], { reportId })
@@ -137,6 +139,9 @@ RegisterNetEvent("sws-report:getMessages", function(reportId)
             senderName = row.sender_name,
             senderType = row.sender_type,
             message = row.message,
+            messageType = row.message_type or MessageType.TEXT,
+            audioUrl = row.audio_url,
+            audioDuration = row.audio_duration,
             createdAt = row.created_at
         })
     end

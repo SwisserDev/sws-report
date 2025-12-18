@@ -28,6 +28,9 @@ CREATE TABLE IF NOT EXISTS `report_messages` (
     `sender_name` VARCHAR(64) NOT NULL,
     `sender_type` ENUM('player', 'admin', 'system') NOT NULL,
     `message` TEXT NOT NULL,
+    `message_type` ENUM('text', 'voice') DEFAULT 'text',
+    `audio_url` VARCHAR(512) DEFAULT NULL,
+    `audio_duration` INT DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`report_id`) REFERENCES `reports`(`id`) ON DELETE CASCADE,
     INDEX `idx_report_id` (`report_id`)
