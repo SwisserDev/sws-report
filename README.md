@@ -51,6 +51,7 @@ Standalone report system for FiveM with live chat, admin tools, and Discord inte
 ## Features
 
 - **Player Reports** - Create tickets with live chat support
+- **Voice Messages** - Record and send audio messages in chat (optional)
 - **Admin Panel** - Claim, resolve, and manage reports
 - **Moderation Tools** - Teleport, heal, freeze, spectate, kick
 - **Discord Integration** - Webhook logging for all events
@@ -83,6 +84,9 @@ cd resources/sws-report/web && npm install && npm run build
 # 4. Add to server.cfg
 ensure oxmysql
 ensure sws-report
+
+# 5. (Optional) Enable voice messages
+mysql -u root -p your_database < resources/sws-report/sql/migrate_voice_messages.sql
 ```
 
 ---
@@ -108,6 +112,13 @@ Config.AdminIdentifiers = {
 Config.Discord = {
     enabled = true,
     webhook = "https://discord.com/api/webhooks/..."
+}
+
+-- Voice Messages (optional, requires migration)
+Config.VoiceMessages = {
+    enabled = true,
+    maxDurationSeconds = 60,
+    maxFileSizeKB = 7500
 }
 ```
 
