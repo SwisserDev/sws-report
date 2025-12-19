@@ -84,7 +84,7 @@ end
 ---@param status ReportStatus New status
 function Report:setStatus(status)
     self.data.status = status
-    self.data.updatedAt = os.date("%Y-%m-%d %H:%M:%S")
+    self.data.updatedAt = os.date("!%Y-%m-%dT%H:%M:%SZ")
 end
 
 ---Claim report
@@ -94,7 +94,7 @@ function Report:claim(adminId, adminName)
     self.data.status = ReportStatus.CLAIMED
     self.data.claimedBy = adminId
     self.data.claimedByName = adminName
-    self.data.updatedAt = os.date("%Y-%m-%d %H:%M:%S")
+    self.data.updatedAt = os.date("!%Y-%m-%dT%H:%M:%SZ")
 end
 
 ---Unclaim report
@@ -102,13 +102,13 @@ function Report:unclaim()
     self.data.status = ReportStatus.OPEN
     self.data.claimedBy = nil
     self.data.claimedByName = nil
-    self.data.updatedAt = os.date("%Y-%m-%d %H:%M:%S")
+    self.data.updatedAt = os.date("!%Y-%m-%dT%H:%M:%SZ")
 end
 
 ---Resolve report
 function Report:resolve()
     self.data.status = ReportStatus.RESOLVED
-    self.data.resolvedAt = os.date("%Y-%m-%d %H:%M:%S")
+    self.data.resolvedAt = os.date("!%Y-%m-%dT%H:%M:%SZ")
     self.data.updatedAt = self.data.resolvedAt
 end
 
@@ -122,7 +122,7 @@ end
 ---@param priority integer Priority level (0-3)
 function Report:setPriority(priority)
     self.data.priority = priority
-    self.data.updatedAt = os.date("%Y-%m-%d %H:%M:%S")
+    self.data.updatedAt = os.date("!%Y-%m-%dT%H:%M:%SZ")
 end
 
 ---Add message to report

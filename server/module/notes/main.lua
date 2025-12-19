@@ -116,7 +116,7 @@ RegisterNetEvent("sws-report:addReportNote", function(reportId, note)
         adminId = admin.identifier,
         adminName = admin.name,
         note = sanitizedNote,
-        createdAt = os.date("%Y-%m-%d %H:%M:%S")
+        createdAt = os.date("!%Y-%m-%dT%H:%M:%SZ")
     }
 
     for adminSource, isAdmin in pairs(Admins) do
@@ -219,7 +219,7 @@ RegisterNetEvent("sws-report:addPlayerNote", function(playerId, note)
         adminId = admin.identifier,
         adminName = admin.name,
         note = sanitizedNote,
-        createdAt = os.date("%Y-%m-%d %H:%M:%S")
+        createdAt = os.date("!%Y-%m-%dT%H:%M:%SZ")
     }
 
     for adminSource, isAdmin in pairs(Admins) do

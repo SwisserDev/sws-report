@@ -306,8 +306,8 @@ RegisterNetEvent("sws-report:createReport", function(data)
         status = ReportStatus.OPEN,
         priority = 0,
         playerCoords = data.coords,
-        createdAt = os.date("%Y-%m-%d %H:%M:%S"),
-        updatedAt = os.date("%Y-%m-%d %H:%M:%S"),
+        createdAt = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+        updatedAt = os.date("!%Y-%m-%dT%H:%M:%SZ"),
         messages = {}
     }
 

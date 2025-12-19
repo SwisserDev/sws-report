@@ -68,7 +68,7 @@ RegisterNetEvent("sws-report:sendMessage", function(reportId, message)
         senderName = player.name,
         senderType = senderType,
         message = message,
-        createdAt = os.date("%Y-%m-%d %H:%M:%S")
+        createdAt = os.date("!%Y-%m-%dT%H:%M:%SZ")
     }
 
     report:addMessage(messageData)
@@ -171,7 +171,7 @@ function SendSystemMessage(reportId, message)
         senderName = "System",
         senderType = SenderType.SYSTEM,
         message = message,
-        createdAt = os.date("%Y-%m-%d %H:%M:%S")
+        createdAt = os.date("!%Y-%m-%dT%H:%M:%SZ")
     }
 
     report:addMessage(messageData)

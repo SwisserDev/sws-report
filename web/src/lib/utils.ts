@@ -1,8 +1,20 @@
 /**
+ * Parse timestamp handling both ISO 8601 UTC and legacy formats
+ */
+const parseTimestamp = (timestamp: string): Date => {
+  // ISO 8601 format (new): "2025-01-16T14:30:45Z"
+  if (timestamp.includes('T')) {
+    return new Date(timestamp)
+  }
+  // Legacy format: "2025-01-16 14:30:45" - treat as UTC
+  return new Date(timestamp.replace(' ', 'T') + 'Z')
+}
+
+/**
  * Format a timestamp for display
  */
 export const formatTimestamp = (timestamp: string): string => {
-  const date = new Date(timestamp)
+  const date = parseTimestamp(timestamp)
   return date.toLocaleString("en-US", {
     month: "short",
     day: "numeric",
@@ -15,7 +27,7 @@ export const formatTimestamp = (timestamp: string): string => {
  * Format relative time (e.g., "2 hours ago")
  */
 export const formatRelativeTime = (timestamp: string): string => {
-  const date = new Date(timestamp)
+  const date = parseTimestamp(timestamp)
   const now = new Date()
   const diff = now.getTime() - date.getTime()
 
