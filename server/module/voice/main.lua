@@ -57,7 +57,7 @@ local function validateAudioData(audioData, duration)
     return true, nil
 end
 
----Upload audio to Discord and get CDN URL
+---Upload audio to Discord and get CDN URL (via JS module for proper binary handling)
 ---@param audioBase64 string Base64 encoded audio
 ---@param reportId integer Report ID
 ---@param senderName string Sender name
@@ -68,55 +68,26 @@ local function uploadToDiscord(audioBase64, reportId, senderName, callback)
         return
     end
 
-    local decodedAudio = base64Decode(audioBase64)
-    if not decodedAudio or #decodedAudio == 0 then
-        PrintError("Failed to decode audio data")
-        callback(false, nil)
-        return
-    end
+    print(("[sws-report] Lua: Calling JS upload for report #%d, base64 size: %d"):format(reportId, #audioBase64))
 
-    local boundary = "----WebKitFormBoundary" .. GenerateUUID():gsub("-", "")
-    local timestamp = os.date("%Y%m%d_%H%M%S")
-    local safeName = senderName:gsub("[^%w]", "")
-    local filename = ("voice_report%d_%s_%s.webm"):format(reportId, safeName, timestamp)
-
-    local body = ""
-
-    body = body .. "--" .. boundary .. "\r\n"
-    body = body .. 'Content-Disposition: form-data; name="payload_json"\r\n'
-    body = body .. "Content-Type: application/json\r\n\r\n"
-    body = body .. json.encode({
-        username = Config.Discord.botName,
-        avatar_url = Config.Discord.botAvatar ~= "" and Config.Discord.botAvatar or nil,
-        content = ("Voice message in Report #%d from %s"):format(reportId, senderName)
-    }) .. "\r\n"
-
-    body = body .. "--" .. boundary .. "\r\n"
-    body = body .. ('Content-Disposition: form-data; name="file"; filename="%s"\r\n'):format(filename)
-    body = body .. "Content-Type: audio/webm\r\n\r\n"
-    body = body .. decodedAudio .. "\r\n"
-    body = body .. "--" .. boundary .. "--\r\n"
-
-    local headers = {
-        ["Content-Type"] = "multipart/form-data; boundary=" .. boundary
-    }
-
-    PerformHttpRequest(Config.Discord.webhook .. "?wait=true", function(statusCode, response, respHeaders)
-        if statusCode == 200 then
-            local success, responseData = pcall(json.decode, response)
-            if success and responseData and responseData.attachments and responseData.attachments[1] then
-                local cdnUrl = responseData.attachments[1].url
-                DebugPrint(("Audio uploaded to Discord: %s"):format(cdnUrl))
-                callback(true, cdnUrl)
-            else
-                PrintError("Discord response missing attachment URL")
-                callback(false, nil)
-            end
+    exports["sws-report"]:uploadVoiceToDiscord({
+        webhookUrl = Config.Discord.webhook,
+        base64Audio = audioBase64,
+        reportId = reportId,
+        senderName = senderName,
+        botName = Config.Discord.botName,
+        botAvatar = Config.Discord.botAvatar ~= "" and Config.Discord.botAvatar or nil
+    }, function(success, url, errorMsg)
+        print(("[sws-report] Lua: JS callback received - success: %s, url: %s, error: %s"):format(
+            tostring(success), tostring(url), tostring(errorMsg)
+        ))
+        if success and url then
+            callback(true, url)
         else
-            PrintError(("Discord upload failed: %s - %s"):format(tostring(statusCode), tostring(response)))
+            PrintError(("Discord upload failed: %s"):format(errorMsg or "Unknown error"))
             callback(false, nil)
         end
-    end, "POST", body, headers)
+    end)
 end
 
 ---Send voice message in report

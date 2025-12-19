@@ -22,7 +22,8 @@ client_scripts {
 server_scripts {
     "@oxmysql/lib/MySQL.lua",
     "server/main.lua",
-    "server/module/**/*.lua"
+    "server/module/**/*.lua",
+    "server/module/voice/discord-upload.js"
 }
 
 ui_page "web/out/index.html"

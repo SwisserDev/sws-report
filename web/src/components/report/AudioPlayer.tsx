@@ -26,7 +26,9 @@ export function AudioPlayer({ src, duration: expectedDuration, className }: Audi
     if (!audio) return
 
     const handleLoadedMetadata = () => {
-      setDuration(audio.duration)
+      if (isFinite(audio.duration) && !isNaN(audio.duration)) {
+        setDuration(audio.duration)
+      }
       setIsLoading(false)
     }
 
@@ -86,6 +88,9 @@ export function AudioPlayer({ src, duration: expectedDuration, className }: Audi
   }
 
   const formatTime = (seconds: number): string => {
+    if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) {
+      return "0:00"
+    }
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
     return `${mins}:${secs.toString().padStart(2, "0")}`
