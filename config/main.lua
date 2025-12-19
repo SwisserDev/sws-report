@@ -98,6 +98,34 @@ Config.Sounds = {
     volume = 0.5
 }
 
+-- Custom Notification Function
+-- Set to nil to use built-in notifications, or define your own function
+-- Function signature: function(source, message, type)
+-- type is: "success", "error", or "info"
+Config.CustomNotify = nil
+
+--[[ ESX Example:
+Config.CustomNotify = function(source, message, type)
+    TriggerClientEvent('esx:showNotification', source, message)
+end
+]]
+
+--[[ QBCore Example:
+Config.CustomNotify = function(source, message, type)
+    TriggerClientEvent('QBCore:Notify', source, message, type)
+end
+]]
+
+--[[ ox_lib Example:
+Config.CustomNotify = function(source, message, type)
+    TriggerClientEvent('ox_lib:notify', source, {
+        title = 'Report System',
+        description = message,
+        type = type
+    })
+end
+]]
+
 -- Discord Webhook
 Config.Discord = {
     enabled = false,

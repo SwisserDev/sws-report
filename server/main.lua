@@ -115,6 +115,15 @@ end
 ---@param notifyType? string Notification type ("success" | "error" | "info")
 function NotifyPlayer(source, message, notifyType)
     notifyType = notifyType or "info"
+
+    -- Use custom notification if configured
+    if Config.CustomNotify then
+        local success = pcall(Config.CustomNotify, source, message, notifyType)
+        if success then return end
+        -- Fall through to default if custom fails
+    end
+
+    -- Default built-in notification
     TriggerClientEvent("sws-report:notify", source, message, notifyType)
 end
 
