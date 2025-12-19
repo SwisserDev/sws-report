@@ -85,6 +85,8 @@ ensure oxmysql
 ensure sws-report
 ```
 
+> **Upgrading from an older version?** See [UPGRADING.md](UPGRADING.md)
+
 ---
 
 ## Configuration
