@@ -44,6 +44,42 @@ local function getAllIdentifiers(source)
     return GetPlayerIdentifiers(source) or {}
 end
 
+---Parse and save player identifiers to database
+---@param source integer Player server ID
+---@param primaryIdentifier string Primary identifier for this player
+local function savePlayerIdentifiers(source, primaryIdentifier)
+    local identifiers = GetPlayerIdentifiers(source) or {}
+    local parsed = {
+        license = nil,
+        steam = nil,
+        discord = nil,
+        fivem = nil
+    }
+
+    for _, id in ipairs(identifiers) do
+        if string.find(id, "license:") then
+            parsed.license = id
+        elseif string.find(id, "steam:") then
+            parsed.steam = id
+        elseif string.find(id, "discord:") then
+            parsed.discord = id
+        elseif string.find(id, "fivem:") then
+            parsed.fivem = id
+        end
+    end
+
+    -- Upsert into database
+    MySQL.insert([[
+        INSERT INTO player_identifiers (player_id, license, steam, discord, fivem)
+        VALUES (?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+            license = VALUES(license),
+            steam = VALUES(steam),
+            discord = VALUES(discord),
+            fivem = VALUES(fivem)
+    ]], { primaryIdentifier, parsed.license, parsed.steam, parsed.discord, parsed.fivem })
+end
+
 ---Check if player is admin
 ---@param source integer Player server ID
 ---@return boolean
@@ -175,6 +211,9 @@ RegisterNetEvent("sws-report:playerJoined", function()
         name = name,
         isAdmin = IsPlayerAdmin(source)
     }
+
+    -- Save all player identifiers to database for offline lookup
+    savePlayerIdentifiers(source, identifier)
 
     DebugPrint(("Player joined: %s (%s) - Admin: %s"):format(name, identifier, tostring(Players[source].isAdmin)))
 

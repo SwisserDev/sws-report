@@ -12,6 +12,12 @@
 ---@field createdAt string Creation timestamp
 ---@field resolvedAt string | nil Resolution timestamp
 
+---@class PlayerIdentifiers
+---@field license string | nil License identifier
+---@field steam string | nil Steam identifier
+---@field discord string | nil Discord identifier
+---@field fivem string | nil FiveM identifier
+
 ---@class PlayerHistory
 ---@field playerId string Player identifier
 ---@field playerName string Player name
@@ -20,6 +26,7 @@
 ---@field resolvedReports number Number of resolved reports
 ---@field reports HistoryReport[] List of reports
 ---@field notes PlayerNote[] List of admin notes
+---@field identifiers PlayerIdentifiers | nil Player identifiers (from database)
 
 ---Get player report history
 ---@param playerId string Player identifier
@@ -77,6 +84,18 @@ local function getPlayerHistory(playerId, limit)
 
     local notes = exports["sws-report"]:GetPlayerNotes(playerId) or {}
 
+    -- Load player identifiers from database (works for offline players too)
+    local identifiers = nil
+    local dbIdentifiers = MySQL.query.await([[
+        SELECT license, steam, discord, fivem
+        FROM player_identifiers
+        WHERE player_id = ?
+    ]], { playerId })
+
+    if dbIdentifiers and dbIdentifiers[1] then
+        identifiers = dbIdentifiers[1]
+    end
+
     return {
         playerId = playerId,
         playerName = playerName or "Unknown",
@@ -84,7 +103,8 @@ local function getPlayerHistory(playerId, limit)
         openReports = openCount,
         resolvedReports = resolvedCount,
         reports = reports,
-        notes = notes
+        notes = notes,
+        identifiers = identifiers
     }
 end
 

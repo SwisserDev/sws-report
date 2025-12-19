@@ -56,3 +56,13 @@ CREATE TABLE IF NOT EXISTS `player_notes` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX `idx_player_id` (`player_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Player identifiers cache (for admin lookup even when player is offline)
+CREATE TABLE IF NOT EXISTS `player_identifiers` (
+    `player_id` VARCHAR(60) NOT NULL PRIMARY KEY,
+    `license` VARCHAR(60) DEFAULT NULL,
+    `steam` VARCHAR(60) DEFAULT NULL,
+    `discord` VARCHAR(60) DEFAULT NULL,
+    `fivem` VARCHAR(60) DEFAULT NULL,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

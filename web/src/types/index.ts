@@ -114,6 +114,13 @@ export interface HistoryReport {
   resolvedAt?: string
 }
 
+export interface PlayerIdentifiers {
+  license?: string
+  steam?: string
+  discord?: string
+  fivem?: string
+}
+
 export interface PlayerHistory {
   playerId: string
   playerName: string
@@ -122,6 +129,7 @@ export interface PlayerHistory {
   resolvedReports: number
   reports: HistoryReport[]
   notes: PlayerNote[]
+  identifiers?: PlayerIdentifiers
 }
 
 export interface AdminStats {

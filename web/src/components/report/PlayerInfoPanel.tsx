@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useReportStore } from "@/stores/reportStore"
 import { useNuiActions } from "@/hooks/useNui"
 import { Button, Badge } from "@/components/ui"
 import { PriorityBadge } from "@/components/ui/PriorityBadge"
-import { formatRelativeTime, formatTimestamp } from "@/lib/utils"
-import type { PlayerNote, HistoryReport } from "@/types"
+import { formatRelativeTime, formatTimestamp, truncate } from "@/lib/utils"
+import type { PlayerNote, HistoryReport, PlayerIdentifiers } from "@/types"
 
 interface PlayerInfoPanelProps {
   playerId: string
@@ -16,10 +16,77 @@ interface PlayerInfoPanelProps {
 
 type ActiveTab = "history" | "notes"
 
+// Identifier display configuration
+const IDENTIFIER_CONFIG: { key: keyof PlayerIdentifiers; label: string; localeKey: string }[] = [
+  { key: "license", label: "License", localeKey: "identifier_license" },
+  { key: "steam", label: "Steam", localeKey: "identifier_steam" },
+  { key: "discord", label: "Discord", localeKey: "identifier_discord" },
+  { key: "fivem", label: "FiveM", localeKey: "identifier_fivem" },
+]
+
+// Copy Modal Component - shows input field with auto-select for Ctrl+C
+function CopyIdentifierModal({
+  identifier,
+  label,
+  copyHint,
+  onClose
+}: {
+  identifier: string
+  label: string
+  copyHint: string
+  onClose: () => void
+}) {
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    // Auto-select the input content when modal opens
+    if (inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [])
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60]"
+      onClick={onClose}
+    >
+      <div
+        className="bg-bg-secondary border border-border rounded-lg p-4 w-full max-w-md shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm font-medium text-text-primary">{label}</span>
+          <button
+            onClick={onClose}
+            className="text-text-tertiary hover:text-text-primary transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <input
+          ref={inputRef}
+          type="text"
+          value={identifier}
+          readOnly
+          className="w-full px-3 py-2 text-sm font-mono bg-bg-tertiary border border-border rounded-lg text-text-primary focus:outline-none focus:border-accent select-all"
+          onFocus={(e) => e.target.select()}
+        />
+        <p className="text-xs text-text-tertiary mt-2 text-center">
+          {copyHint}
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export function PlayerInfoPanel({ playerId, playerName, onClose }: PlayerInfoPanelProps) {
   const [activeTab, setActiveTab] = useState<ActiveTab>("history")
   const [newNote, setNewNote] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [selectedIdentifier, setSelectedIdentifier] = useState<{ value: string; label: string } | null>(null)
 
   const { playerHistory, locale, categories } = useReportStore()
   const { getPlayerHistory, addPlayerNote, deletePlayerNote } = useNuiActions()
@@ -109,6 +176,39 @@ export function PlayerInfoPanel({ playerId, playerName, onClose }: PlayerInfoPan
             </svg>
           </button>
         </div>
+
+        {/* Identifiers - only shown if player is online */}
+        {playerHistory?.identifiers && Object.keys(playerHistory.identifiers).length > 0 && (
+          <div className="px-6 py-3 border-b border-border bg-bg-tertiary/30">
+            <div className="grid grid-cols-2 xl:grid-cols-4 gap-2">
+              {IDENTIFIER_CONFIG.map(({ key, label, localeKey }) => {
+                const value = playerHistory.identifiers?.[key]
+                if (!value) return null
+
+                const displayLabel = locale[localeKey] || label
+
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setSelectedIdentifier({ value, label: displayLabel })}
+                    className="flex items-center gap-2 px-3 py-2 bg-bg-card hover:bg-bg-elevated border border-border rounded-lg transition-colors group text-left"
+                    title={value}
+                  >
+                    <span className="text-xs font-medium text-text-tertiary min-w-[52px]">
+                      {displayLabel}
+                    </span>
+                    <span className="flex-1 text-xs text-text-secondary font-mono truncate">
+                      {truncate(value, 20)}
+                    </span>
+                    <svg className="w-4 h-4 text-text-tertiary group-hover:text-text-secondary flex-shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Stats */}
         {playerHistory && (
@@ -263,6 +363,16 @@ export function PlayerInfoPanel({ playerId, playerName, onClose }: PlayerInfoPan
           )}
         </div>
       </div>
+
+      {/* Copy Identifier Modal */}
+      {selectedIdentifier && (
+        <CopyIdentifierModal
+          identifier={selectedIdentifier.value}
+          label={selectedIdentifier.label}
+          copyHint={locale.copy_hint || "Ctrl+C to copy"}
+          onClose={() => setSelectedIdentifier(null)}
+        />
+      )}
     </div>
   )
 }

@@ -209,5 +209,13 @@ return {
     ["recent_activity"] = "Letzte Aktivität (7 Tage)",
     ["avg_time"] = "Durchschn.",
     ["resolved"] = "gelöst",
-    ["no_data"] = "Keine Daten verfügbar"
+    ["no_data"] = "Keine Daten verfügbar",
+
+    -- Player Identifiers
+    ["identifier_license"] = "Lizenz",
+    ["identifier_steam"] = "Steam",
+    ["identifier_discord"] = "Discord",
+    ["identifier_fivem"] = "FiveM",
+    ["copied"] = "Kopiert!",
+    ["copy_hint"] = "Strg+C zum Kopieren"
 }
