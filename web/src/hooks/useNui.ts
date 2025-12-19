@@ -14,6 +14,7 @@ interface ShowUIData {
   allReports: Report[]
   playerData: PlayerData
   locale: Record<string, string>
+  voiceMessagesEnabled?: boolean
 }
 
 export function useNuiListener() {
@@ -32,6 +33,7 @@ export function useNuiListener() {
           store.setAllReports(uiData.allReports || [])
           store.setPlayerData(uiData.playerData)
           store.setLocale(uiData.locale || {})
+          store.setVoiceMessagesEnabled(uiData.voiceMessagesEnabled ?? false)
           break
         }
 

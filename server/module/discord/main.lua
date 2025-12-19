@@ -270,6 +270,45 @@ local function buildChatMessageEmbed(report, message)
     }
 end
 
+---Build embed for voice message
+---@param report ReportData Report data
+---@param message table Message data
+---@return table
+local function buildVoiceMessageEmbed(report, message)
+    return {
+        username = Config.Discord.botName,
+        avatar_url = Config.Discord.botAvatar ~= "" and Config.Discord.botAvatar or nil,
+        embeds = {
+            {
+                title = "Voice Message in Report #" .. report.id,
+                description = ("Duration: %d seconds"):format(message.audioDuration or 0),
+                color = Config.Discord.colors.message or 7506394,
+                fields = {
+                    {
+                        name = "From",
+                        value = message.senderName,
+                        inline = true
+                    },
+                    {
+                        name = "Type",
+                        value = message.senderType == "admin" and "Admin" or "Player",
+                        inline = true
+                    },
+                    {
+                        name = "Report",
+                        value = report.subject,
+                        inline = false
+                    }
+                },
+                timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+                footer = {
+                    text = "Report System - Voice Message"
+                }
+            }
+        }
+    }
+end
+
 ---Build embed for admin action
 ---@param action string Action type
 ---@param admin PlayerData Admin data
@@ -345,6 +384,10 @@ end)
 
 AddEventHandler("sws-report:discord:chatMessage", function(report, message)
     sendWebhook("chatMessage", buildChatMessageEmbed(report, message))
+end)
+
+AddEventHandler("sws-report:discord:voiceMessage", function(report, message)
+    sendWebhook("voiceMessage", buildVoiceMessageEmbed(report, message))
 end)
 
 AddEventHandler("sws-report:discord:adminAction", function(action, admin, target, reportId)

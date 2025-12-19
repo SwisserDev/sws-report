@@ -1,5 +1,6 @@
 export type ReportStatus = "open" | "claimed" | "resolved"
 export type SenderType = "player" | "admin" | "system"
+export type MessageType = "text" | "voice"
 export type ReportPriority = 0 | 1 | 2 | 3
 
 export interface Coordinates {
@@ -47,6 +48,9 @@ export interface Message {
   senderType: SenderType
   message: string
   imageUrl?: string | null
+  messageType?: MessageType
+  audioUrl?: string
+  audioDuration?: number
   createdAt: string
 }
 

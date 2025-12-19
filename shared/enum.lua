@@ -29,6 +29,12 @@ SenderType = {
     SYSTEM = "system"
 }
 
+---@enum MessageType
+MessageType = {
+    TEXT = "text",
+    VOICE = "voice"
+}
+
 ---@enum AdminAction
 AdminAction = {
     TELEPORT_TO = "teleport_to",

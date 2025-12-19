@@ -24,6 +24,7 @@ server_scripts {
     "server/main.lua",
     "server/module/**/*.lua",
     "server/module/admin/discord-screenshot.js"
+    "server/module/voice/discord-upload.js"
 }
 
 ui_page "web/out/index.html"

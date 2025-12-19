@@ -122,11 +122,26 @@ RegisterNetEvent("sws-report:getMessages", function(reportId)
         return
     end
 
-    local messages = MySQL.query.await([[
-        SELECT * FROM report_messages
-        WHERE report_id = ?
-        ORDER BY created_at ASC
-    ]], { reportId })
+    local query
+    if VoiceMessagesAvailable then
+        query = [[
+            SELECT id, report_id, sender_id, sender_name, sender_type,
+                   message, message_type, audio_url, audio_duration, created_at
+            FROM report_messages
+            WHERE report_id = ?
+            ORDER BY created_at ASC
+        ]]
+    else
+        query = [[
+            SELECT id, report_id, sender_id, sender_name, sender_type,
+                   message, created_at
+            FROM report_messages
+            WHERE report_id = ?
+            ORDER BY created_at ASC
+        ]]
+    end
+
+    local messages = MySQL.query.await(query, { reportId })
 
     local formattedMessages = {}
     for _, row in ipairs(messages or {}) do
@@ -138,6 +153,9 @@ RegisterNetEvent("sws-report:getMessages", function(reportId)
             senderType = row.sender_type,
             message = row.message,
             imageUrl = row.image_url,
+            messageType = VoiceMessagesAvailable and (row.message_type or "text") or "text",
+            audioUrl = VoiceMessagesAvailable and row.audio_url or nil,
+            audioDuration = VoiceMessagesAvailable and row.audio_duration or nil,
             createdAt = row.created_at
         })
     end

@@ -122,6 +122,16 @@ return {
     ["report_updated"] = "Report aktualisiert",
     ["report_status_changed"] = "Report #%d Status geändert zu %s",
 
+    -- Voice Messages
+    ["voice_message"] = "Sprachnachricht",
+    ["pause"] = "Pause",
+    ["resume"] = "Fortsetzen",
+    ["no_messages"] = "Noch keine Nachrichten",
+    ["error_voice_disabled"] = "Sprachnachrichten sind deaktiviert",
+    ["error_voice_too_long"] = "Sprachnachricht überschreitet maximale Dauer",
+    ["error_voice_too_large"] = "Sprachnachricht ist zu groß",
+    ["error_voice_upload_failed"] = "Sprachnachricht konnte nicht hochgeladen werden",
+
     -- Errors
     ["error_generic"] = "Ein Fehler ist aufgetreten",
     ["error_cooldown"] = "Bitte warte %d Sekunden bevor du einen weiteren Report erstellst",

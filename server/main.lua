@@ -10,6 +10,9 @@ Reports = {}
 ---@type table<string, integer> Player cooldowns (identifier -> timestamp)
 Cooldowns = {}
 
+---@type boolean Whether voice message database columns exist
+VoiceMessagesAvailable = false
+
 ---@class PlayerData
 ---@field source integer Server ID
 ---@field identifier string Player identifier
@@ -220,7 +223,8 @@ RegisterNetEvent("sws-report:playerJoined", function()
     TriggerClientEvent("sws-report:setPlayerData", source, {
         identifier = identifier,
         name = name,
-        isAdmin = Players[source].isAdmin
+        isAdmin = Players[source].isAdmin,
+        voiceMessagesEnabled = VoiceMessagesAvailable and Config.VoiceMessages.enabled
     })
 
     local playerReports = GetPlayerReports(identifier)
@@ -269,6 +273,33 @@ local function isVersionOutdated(current, latest)
     return false
 end
 
+---Check if voice message database columns exist
+---@return boolean
+local function checkVoiceMigration()
+    local result = MySQL.query.await([[
+        SELECT COLUMN_NAME
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME = 'report_messages'
+        AND COLUMN_NAME = 'message_type'
+    ]])
+    return result and #result > 0
+end
+
+---Print voice migration warning box
+local function printVoiceMigrationWarning()
+    print("^3╔══════════════════════════════════════════════════════════════╗^0")
+    print("^3║^0              ^1VOICE MESSAGE MIGRATION REQUIRED^0               ^3║^0")
+    print("^3╠══════════════════════════════════════════════════════════════╣^0")
+    print("^3║^0  Voice message feature is ^1DISABLED^0 - database not migrated  ^3║^0")
+    print("^3║^0                                                              ^3║^0")
+    print("^3║^0  Run this SQL to enable voice messages:                      ^3║^0")
+    print("^3║^0  ^5source sql/migrate_voice_messages.sql^0                       ^3║^0")
+    print("^3║^0                                                              ^3║^0")
+    print("^3║^0  Text messages continue to work normally.                    ^3║^0")
+    print("^3╚══════════════════════════════════════════════════════════════╝^0")
+end
+
 ---Check for updates from GitHub
 local function checkForUpdates()
     local currentVersion = GetResourceMetadata(RESOURCE_NAME, "version", 0) or "0.0.0"
@@ -313,6 +344,19 @@ AddEventHandler("onResourceStart", function(resourceName)
     LoadReportsFromDatabase()
 
     PrintInfo(("Loaded %d active reports"):format(GetActiveReportCount()))
+
+    VoiceMessagesAvailable = checkVoiceMigration()
+    if VoiceMessagesAvailable then
+        if not Config.Discord.enabled or not Config.Discord.webhook or Config.Discord.webhook == "" then
+            VoiceMessagesAvailable = false
+            PrintWarn("Voice messages: disabled - Discord webhook required for audio storage")
+            PrintWarn("Configure Config.Discord.enabled and Config.Discord.webhook to enable voice messages")
+        else
+            PrintInfo("Voice messages: enabled")
+        end
+    else
+        printVoiceMigrationWarning()
+    end
 
     checkForUpdates()
 end)

@@ -21,6 +21,12 @@ function PrintError(message)
     print(("^1[sws-report:error]^0 %s"):format(message))
 end
 
+---Print warning message
+---@param message string Warning message
+function PrintWarn(message)
+    print(("^3[sws-report:warn]^0 %s"):format(message))
+end
+
 ---Print info message
 ---@param message string Info message
 function PrintInfo(message)

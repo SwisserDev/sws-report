@@ -122,6 +122,16 @@ return {
     ["report_updated"] = "Report Updated",
     ["report_status_changed"] = "Report #%d status changed to %s",
 
+    -- Voice Messages
+    ["voice_message"] = "Voice message",
+    ["pause"] = "Pause",
+    ["resume"] = "Resume",
+    ["no_messages"] = "No messages yet",
+    ["error_voice_disabled"] = "Voice messages are disabled",
+    ["error_voice_too_long"] = "Voice message exceeds maximum duration",
+    ["error_voice_too_large"] = "Voice message file is too large",
+    ["error_voice_upload_failed"] = "Failed to upload voice message",
+
     -- Errors
     ["error_generic"] = "An error occurred",
     ["error_cooldown"] = "Please wait %d seconds before creating another report",
