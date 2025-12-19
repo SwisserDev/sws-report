@@ -139,7 +139,6 @@ export function ReportChat({ report }: ReportChatProps) {
             <VoiceRecorder
               onSend={handleVoiceSend}
               maxDuration={60}
-              disabled={report.status === "resolved"}
               locale={locale}
             />
           )}
