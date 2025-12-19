@@ -68,7 +68,7 @@ local function uploadToDiscord(audioBase64, reportId, senderName, callback)
         return
     end
 
-    print(("[sws-report] Lua: Calling JS upload for report #%d, base64 size: %d"):format(reportId, #audioBase64))
+    DebugPrint(("Uploading voice message for report #%d (size: %d bytes)"):format(reportId, #audioBase64))
 
     exports["sws-report"]:uploadVoiceToDiscord({
         webhookUrl = Config.Discord.webhook,
@@ -78,10 +78,8 @@ local function uploadToDiscord(audioBase64, reportId, senderName, callback)
         botName = Config.Discord.botName,
         botAvatar = Config.Discord.botAvatar ~= "" and Config.Discord.botAvatar or nil
     }, function(success, url, errorMsg)
-        print(("[sws-report] Lua: JS callback received - success: %s, url: %s, error: %s"):format(
-            tostring(success), tostring(url), tostring(errorMsg)
-        ))
         if success and url then
+            DebugPrint(("Voice message uploaded: %s"):format(url))
             callback(true, url)
         else
             PrintError(("Discord upload failed: %s"):format(errorMsg or "Unknown error"))
