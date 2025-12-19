@@ -4,7 +4,7 @@ lua54 "yes"
 
 author "SwisserDev"
 description "Standalone Report System for FiveM"
-version "1.0.2"
+version "1.0.3"
 
 shared_scripts {
     "config/main.lua",
@@ -22,7 +22,8 @@ client_scripts {
 server_scripts {
     "@oxmysql/lib/MySQL.lua",
     "server/main.lua",
-    "server/module/**/*.lua"
+    "server/module/**/*.lua",
+    "server/module/admin/discord-screenshot.js"
 }
 
 ui_page "web/out/index.html"

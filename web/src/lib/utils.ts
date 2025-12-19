@@ -2,6 +2,10 @@
  * Parse timestamp handling both ISO 8601 UTC and legacy formats
  */
 const parseTimestamp = (timestamp: string): Date => {
+  // Guard against null/undefined/non-string
+  if (!timestamp || typeof timestamp !== 'string') {
+    return new Date()
+  }
   // ISO 8601 format (new): "2025-01-16T14:30:45Z"
   if (timestamp.includes('T')) {
     return new Date(timestamp)

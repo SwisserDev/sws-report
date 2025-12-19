@@ -230,6 +230,10 @@ export function useNuiActions() {
     fetchNui("getStatistics")
   }, [])
 
+  const takeScreenshot = useCallback((reportId: number) => {
+    fetchNui("takeScreenshot", { reportId })
+  }, [])
+
   return {
     close,
     createReport,
@@ -250,6 +254,7 @@ export function useNuiActions() {
     getPlayerNotes,
     getPlayerHistory,
     getMyReports,
-    getStatistics
+    getStatistics,
+    takeScreenshot
   }
 }

@@ -3,7 +3,7 @@
 import { forwardRef, type ButtonHTMLAttributes } from "react"
 import { cn } from "@/lib/utils"
 
-type ButtonVariant = "default" | "primary" | "success" | "danger" | "ghost"
+type ButtonVariant = "default" | "primary" | "secondary" | "success" | "danger" | "ghost"
 type ButtonSize = "default" | "sm" | "lg" | "icon"
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -14,6 +14,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const variantStyles: Record<ButtonVariant, string> = {
   default: "bg-bg-card border-border text-text-primary hover:bg-bg-elevated hover:border-border-hover",
   primary: "bg-accent text-white border-accent hover:bg-accent-hover",
+  secondary: "bg-bg-tertiary border-border text-text-secondary hover:bg-bg-elevated hover:text-text-primary hover:border-border-hover",
   success: "bg-success-bg text-success border-success-border hover:bg-success/20",
   danger: "bg-error-bg text-error border-error-border hover:bg-error/20",
   ghost: "bg-transparent border-transparent text-text-secondary hover:text-text-primary hover:bg-bg-tertiary"

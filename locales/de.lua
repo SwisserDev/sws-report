@@ -91,6 +91,11 @@ return {
     ["screenshot_requested"] = "Screenshot angefordert",
     ["screenshot_received"] = "Screenshot von %s erhalten",
     ["screenshot_unavailable"] = "Screenshot-System nicht verfügbar",
+    ["screenshot_requires_discord"] = "Die Screenshot-Funktion erfordert eine konfigurierte Discord-Webhook",
+    ["screenshot_upload_failed"] = "Fehler beim Hochladen des Screenshots zu Discord",
+    ["screenshot_failed"] = "Screenshot konnte nicht erstellt werden",
+    ["screenshot_uploaded"] = "Screenshot hochgeladen",
+    ["take_screenshot"] = "Screenshot aufnehmen",
     ["player_offline"] = "Spieler ist offline",
 
     -- Chat

@@ -19,3 +19,5 @@ Thumbs.db
 # Environment
 .env
 .env.local
+web/package-lock.json
+web/package-lock.json

@@ -137,6 +137,7 @@ RegisterNetEvent("sws-report:getMessages", function(reportId)
             senderName = row.sender_name,
             senderType = row.sender_type,
             message = row.message,
+            imageUrl = row.image_url,
             createdAt = row.created_at
         })
     end
@@ -188,4 +189,116 @@ function SendSystemMessage(reportId, message)
             TriggerClientEvent("sws-report:newMessage", adminSource, messageData)
         end
     end
+end
+
+---Send system message with image in report
+---@param reportId integer Report ID
+---@param message string System message
+---@param imageUrl string Image URL
+function SendSystemMessageWithImage(reportId, message, imageUrl)
+    local report = Reports[reportId]
+    if not report then return end
+
+    local insertId = MySQL.insert.await([[
+        INSERT INTO report_messages (report_id, sender_id, sender_name, sender_type, message, image_url)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ]], {
+        reportId,
+        "system",
+        "System",
+        SenderType.SYSTEM,
+        message,
+        imageUrl
+    })
+
+    if not insertId then return end
+
+    local messageData = {
+        id = insertId,
+        reportId = reportId,
+        senderId = "system",
+        senderName = "System",
+        senderType = SenderType.SYSTEM,
+        message = message,
+        imageUrl = imageUrl,
+        createdAt = os.date("!%Y-%m-%dT%H:%M:%SZ")
+    }
+
+    report:addMessage(messageData)
+
+    -- Notify report owner
+    local ownerData = GetPlayerByIdentifier(report:getPlayerId())
+    if ownerData then
+        TriggerClientEvent("sws-report:newMessage", ownerData.source, messageData)
+    end
+
+    -- Notify all admins
+    for adminSource, adminStatus in pairs(Admins) do
+        if adminStatus then
+            TriggerClientEvent("sws-report:newMessage", adminSource, messageData)
+        end
+    end
+
+    DebugPrint(("System message with image in Report #%d"):format(reportId))
+end
+
+---Send message with image (for user-uploaded screenshots)
+---@param reportId integer Report ID
+---@param player table Player data {identifier, name}
+---@param imageUrl string Image URL
+function SendMessageWithImage(reportId, player, imageUrl)
+    local report = Reports[reportId]
+    if not report then return end
+
+    local isAdmin = Admins[player.source] or false
+    local senderType = isAdmin and SenderType.ADMIN or SenderType.PLAYER
+
+    local insertId = MySQL.insert.await([[
+        INSERT INTO report_messages (report_id, sender_id, sender_name, sender_type, message, image_url)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ]], {
+        reportId,
+        player.identifier,
+        player.name,
+        senderType,
+        "", -- Empty message, just image
+        imageUrl
+    })
+
+    if not insertId then return end
+
+    local messageData = {
+        id = insertId,
+        reportId = reportId,
+        senderId = player.identifier,
+        senderName = player.name,
+        senderType = senderType,
+        message = "",
+        imageUrl = imageUrl,
+        createdAt = os.date("!%Y-%m-%dT%H:%M:%SZ")
+    }
+
+    report:addMessage(messageData)
+
+    MySQL.update.await("UPDATE reports SET updated_at = NOW() WHERE id = ?", { reportId })
+
+    -- Notify report owner
+    local ownerData = GetPlayerByIdentifier(report:getPlayerId())
+    if ownerData and ownerData.source ~= player.source then
+        TriggerClientEvent("sws-report:newMessage", ownerData.source, messageData)
+        TriggerClientEvent("sws-report:playSound", ownerData.source, "message")
+    end
+
+    -- Notify all admins
+    for adminSource, adminStatus in pairs(Admins) do
+        if adminStatus and adminSource ~= player.source then
+            TriggerClientEvent("sws-report:newMessage", adminSource, messageData)
+            TriggerClientEvent("sws-report:playSound", adminSource, "message")
+        end
+    end
+
+    -- Notify sender
+    TriggerClientEvent("sws-report:messageSent", player.source, messageData)
+
+    DebugPrint(("Screenshot message in Report #%d from %s"):format(reportId, player.name))
 end

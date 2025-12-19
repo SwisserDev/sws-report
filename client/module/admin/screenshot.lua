@@ -1,32 +1,37 @@
 ---@type boolean Whether screenshot-basic is available
 local screenshotAvailable = GetResourceState("screenshot-basic") == "started"
 
----Take screenshot and send to server
-RegisterNetEvent("sws-report:screenshot", function(adminSource)
-    if not screenshotAvailable then return end
+DebugPrint(("Screenshot-basic available: %s"):format(tostring(screenshotAvailable)))
 
-    exports["screenshot-basic"]:requestScreenshotUpload(
-        "https://api.imgur.com/3/image",
-        "image",
-        {
-            headers = {
-                ["Authorization"] = "Client-ID YOUR_IMGUR_CLIENT_ID",
-                ["Content-Type"] = "multipart/form-data"
-            }
-        },
-        function(data)
-            local resp = json.decode(data)
+---Take screenshot and send to server as base64
+---@param adminSource integer Admin who requested
+---@param reportId integer Report ID
+RegisterNetEvent("sws-report:screenshot", function(adminSource, reportId)
+    DebugPrint(("Screenshot requested by admin %s for report %s"):format(
+        tostring(adminSource), tostring(reportId)
+    ))
 
-            if resp and resp.data and resp.data.link then
-                TriggerServerEvent("sws-report:screenshotTaken", resp.data.link, adminSource)
-            else
-                TriggerServerEvent("sws-report:screenshotTaken", nil, adminSource)
-            end
+    if not screenshotAvailable then
+        DebugPrint("Screenshot-basic not available, aborting")
+        return
+    end
+
+    DebugPrint("Calling screenshot-basic:requestScreenshot...")
+
+    exports["screenshot-basic"]:requestScreenshot(function(base64Data)
+        DebugPrint(("Screenshot callback received, data length: %s"):format(
+            base64Data and #base64Data or "nil"
+        ))
+
+        if base64Data then
+            TriggerServerEvent("sws-report:screenshotTaken", base64Data, adminSource, reportId)
+        else
+            TriggerServerEvent("sws-report:screenshotTaken", nil, adminSource, reportId)
         end
-    )
+    end)
 end)
 
----Receive screenshot (admin)
+---Receive screenshot URL (admin)
 RegisterNetEvent("sws-report:receiveScreenshot", function(imageUrl, playerName)
     if imageUrl then
         print(("[sws-report] Screenshot from %s: %s"):format(playerName, imageUrl))

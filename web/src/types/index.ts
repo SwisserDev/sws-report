@@ -46,6 +46,7 @@ export interface Message {
   senderName: string
   senderType: SenderType
   message: string
+  imageUrl?: string | null
   createdAt: string
 }
 

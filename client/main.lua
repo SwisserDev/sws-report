@@ -198,6 +198,37 @@ RegisterNUICallback("getStatistics", function(_, cb)
     cb("ok")
 end)
 
+RegisterNUICallback("takeScreenshot", function(data, cb)
+    cb("ok")
+
+    local reportId = data.reportId
+    if not reportId then return end
+
+    -- Request screenshot via server (workaround for FiveM NUI callback limitation with large payloads)
+    TriggerServerEvent("sws-report:requestUserScreenshot", reportId)
+end)
+
+---Handle screenshot request from server (ensures we're in RegisterNetEvent context for large payloads)
+RegisterNetEvent("sws-report:takeUserScreenshot", function(reportId)
+    -- Check if screenshot-basic is available
+    if GetResourceState("screenshot-basic") ~= "started" then
+        DebugPrint("Screenshot-basic not available")
+        return
+    end
+
+    DebugPrint(("User taking screenshot for report %s"):format(tostring(reportId)))
+
+    exports["screenshot-basic"]:requestScreenshot(function(base64Data)
+        DebugPrint(("User screenshot callback, data length: %s"):format(
+            base64Data and #base64Data or "nil"
+        ))
+
+        if base64Data then
+            TriggerServerEvent("sws-report:userScreenshot", reportId, base64Data)
+        end
+    end)
+end)
+
 -- Server Events
 RegisterNetEvent("sws-report:setPlayerData", function(data)
     playerIdentifier = data.identifier
