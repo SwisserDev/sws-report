@@ -112,7 +112,7 @@ function GetStatistics()
 
     -- Recent activity (last 7 days)
     local activityResults = MySQL.query.await([[
-        SELECT DATE_FORMAT(created_at, '%Y-%m-%d') as date, COUNT(*) as count
+        SELECT DATE(created_at) as date, COUNT(*) as count
         FROM reports
         WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
         GROUP BY DATE(created_at)
