@@ -299,7 +299,13 @@ AddEventHandler("onResourceStart", function(resourceName)
 
     VoiceMessagesAvailable = checkVoiceMigration()
     if VoiceMessagesAvailable then
-        PrintInfo("Voice messages: enabled")
+        if not Config.Discord.enabled or not Config.Discord.webhook or Config.Discord.webhook == "" then
+            VoiceMessagesAvailable = false
+            PrintWarn("Voice messages: disabled - Discord webhook required for audio storage")
+            PrintWarn("Configure Config.Discord.enabled and Config.Discord.webhook to enable voice messages")
+        else
+            PrintInfo("Voice messages: enabled")
+        end
     else
         printVoiceMigrationWarning()
     end
