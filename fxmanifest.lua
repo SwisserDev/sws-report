@@ -23,7 +23,7 @@ server_scripts {
     "@oxmysql/lib/MySQL.lua",
     "server/main.lua",
     "server/module/**/*.lua",
-    "server/module/admin/discord-screenshot.js"
+    "server/module/admin/discord-screenshot.js",
     "server/module/voice/discord-upload.js"
 }
 
