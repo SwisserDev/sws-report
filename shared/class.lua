@@ -56,6 +56,12 @@ function Report:getPlayerId()
     return self.data.playerId
 end
 
+---Get player name
+---@return string
+function Report:getPlayerName()
+    return self.data.playerName
+end
+
 ---Get report status
 ---@return ReportStatus
 function Report:getStatus()

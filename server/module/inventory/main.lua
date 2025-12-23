@@ -75,7 +75,7 @@ local function validateInventoryAction(source, reportId, action)
         return false
     end
 
-    local targetPlayer = GetPlayerByIdentifier(report:getPlayerId())
+    local targetPlayer = GetPlayerByIdentifier(report.data.playerId)
     if not targetPlayer then
         NotifyPlayer(source, L("inventory_player_offline"), "error")
         return false
@@ -159,11 +159,14 @@ RegisterNetEvent("sws-report:addInventoryItem", function(reportId, itemName, cou
         local admin = Players[source]
         local itemLabel = currentItem and currentItem.label or itemName
 
+        local playerId = report.data.playerId
+        local playerName = report.data.playerName
+
         logInventoryChange(
             admin.identifier,
             admin.name,
-            report:getPlayerId(),
-            report:getPlayerName(),
+            playerId,
+            playerName,
             reportId,
             InventoryAction.ADD,
             itemName,
@@ -179,9 +182,9 @@ RegisterNetEvent("sws-report:addInventoryItem", function(reportId, itemName, cou
         TriggerEvent("sws-report:discord:inventoryAction", {
             action = InventoryAction.ADD,
             admin = admin,
-            player = { identifier = report:getPlayerId(), name = report:getPlayerName() },
+            player = { identifier = playerId, name = playerName },
             item = { name = itemName, label = itemLabel, count = count },
-            report = report,
+            reportId = reportId,
             countBefore = countBefore,
             countAfter = countBefore + count
         })
@@ -194,7 +197,7 @@ RegisterNetEvent("sws-report:addInventoryItem", function(reportId, itemName, cou
             items = updatedItems
         })
 
-        DebugPrint(("Admin %s added %dx %s to player %s"):format(admin.name, count, itemName, report:getPlayerName()))
+        DebugPrint(("Admin %s added %dx %s to player %s"):format(admin.name, count, itemName, playerName))
     else
         NotifyPlayer(source, L("inventory_action_failed", result.response or "Unknown error"), "error")
     end
@@ -241,11 +244,14 @@ RegisterNetEvent("sws-report:removeInventoryItem", function(reportId, itemName, 
         local admin = Players[source]
         local itemLabel = currentItem.label or itemName
 
+        local playerId = report.data.playerId
+        local playerName = report.data.playerName
+
         logInventoryChange(
             admin.identifier,
             admin.name,
-            report:getPlayerId(),
-            report:getPlayerName(),
+            playerId,
+            playerName,
             reportId,
             InventoryAction.REMOVE,
             itemName,
@@ -261,9 +267,9 @@ RegisterNetEvent("sws-report:removeInventoryItem", function(reportId, itemName, 
         TriggerEvent("sws-report:discord:inventoryAction", {
             action = InventoryAction.REMOVE,
             admin = admin,
-            player = { identifier = report:getPlayerId(), name = report:getPlayerName() },
+            player = { identifier = playerId, name = playerName },
             item = { name = itemName, label = itemLabel, count = count },
-            report = report,
+            reportId = reportId,
             countBefore = countBefore,
             countAfter = countBefore - count
         })
@@ -276,7 +282,7 @@ RegisterNetEvent("sws-report:removeInventoryItem", function(reportId, itemName, 
             items = updatedItems
         })
 
-        DebugPrint(("Admin %s removed %dx %s from player %s"):format(admin.name, count, itemName, report:getPlayerName()))
+        DebugPrint(("Admin %s removed %dx %s from player %s"):format(admin.name, count, itemName, playerName))
     else
         NotifyPlayer(source, L("inventory_action_failed", result.response or "Unknown error"), "error")
     end
@@ -324,11 +330,14 @@ RegisterNetEvent("sws-report:setInventoryItemCount", function(reportId, itemName
         local admin = Players[source]
         local itemLabel = currentItem and currentItem.label or itemName
 
+        local playerId = report.data.playerId
+        local playerName = report.data.playerName
+
         logInventoryChange(
             admin.identifier,
             admin.name,
-            report:getPlayerId(),
-            report:getPlayerName(),
+            playerId,
+            playerName,
             reportId,
             InventoryAction.SET,
             itemName,
@@ -344,9 +353,9 @@ RegisterNetEvent("sws-report:setInventoryItemCount", function(reportId, itemName
         TriggerEvent("sws-report:discord:inventoryAction", {
             action = InventoryAction.SET,
             admin = admin,
-            player = { identifier = report:getPlayerId(), name = report:getPlayerName() },
+            player = { identifier = playerId, name = playerName },
             item = { name = itemName, label = itemLabel, count = count },
-            report = report,
+            reportId = reportId,
             countBefore = countBefore,
             countAfter = count
         })
@@ -359,7 +368,7 @@ RegisterNetEvent("sws-report:setInventoryItemCount", function(reportId, itemName
             items = updatedItems
         })
 
-        DebugPrint(("Admin %s set %s count to %d for player %s"):format(admin.name, itemName, count, report:getPlayerName()))
+        DebugPrint(("Admin %s set %s count to %d for player %s"):format(admin.name, itemName, count, playerName))
     else
         NotifyPlayer(source, L("inventory_action_failed", result.response or "Unknown error"), "error")
     end
@@ -420,11 +429,14 @@ RegisterNetEvent("sws-report:setInventoryItemMetadata", function(reportId, slot,
     if result.success then
         local admin = Players[source]
 
+        local playerId = report.data.playerId
+        local playerName = report.data.playerName
+
         logInventoryChange(
             admin.identifier,
             admin.name,
-            report:getPlayerId(),
-            report:getPlayerName(),
+            playerId,
+            playerName,
             reportId,
             InventoryAction.METADATA_EDIT,
             targetItem.name,
@@ -440,9 +452,9 @@ RegisterNetEvent("sws-report:setInventoryItemMetadata", function(reportId, slot,
         TriggerEvent("sws-report:discord:inventoryAction", {
             action = InventoryAction.METADATA_EDIT,
             admin = admin,
-            player = { identifier = report:getPlayerId(), name = report:getPlayerName() },
+            player = { identifier = playerId, name = playerName },
             item = { name = targetItem.name, label = targetItem.label, slot = slot },
-            report = report,
+            reportId = reportId,
             metadataBefore = metadataBefore,
             metadataAfter = metadata
         })
@@ -455,7 +467,7 @@ RegisterNetEvent("sws-report:setInventoryItemMetadata", function(reportId, slot,
             items = updatedItems
         })
 
-        DebugPrint(("Admin %s edited metadata for %s (slot %d) for player %s"):format(admin.name, targetItem.name, slot, report:getPlayerName()))
+        DebugPrint(("Admin %s edited metadata for %s (slot %d) for player %s"):format(admin.name, targetItem.name, slot, playerName))
     else
         NotifyPlayer(source, L("inventory_action_failed", result.response or "Unknown error"), "error")
     end

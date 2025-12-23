@@ -293,37 +293,41 @@ export const useReportStore = create<ReportState>((set, get) => ({
   setStatistics: (statistics) => set({ statistics }),
 
   // Inventory Actions
-  setInventory: (reportId, data) => set((state) => ({
-    inventory: {
-      ...state.inventory,
-      [reportId]: {
-        items: [],
-        itemList: {},
-        loading: false,
-        systemName: "",
-        supportsMetadata: false,
-        actionLog: [],
-        ...state.inventory[reportId],
-        ...data
+  setInventory: (reportId, data) => set((state) => {
+    const existing = state.inventory[reportId]
+    const defaults = {
+      items: [],
+      itemList: {},
+      loading: false,
+      systemName: "",
+      supportsMetadata: false,
+      actionLog: []
+    }
+    return {
+      inventory: {
+        ...state.inventory,
+        [reportId]: { ...defaults, ...existing, ...data }
       }
     }
-  })),
+  }),
 
-  setInventoryLoading: (reportId, loading) => set((state) => ({
-    inventory: {
-      ...state.inventory,
-      [reportId]: {
-        items: [],
-        itemList: {},
-        loading,
-        systemName: "",
-        supportsMetadata: false,
-        actionLog: [],
-        ...state.inventory[reportId],
-        loading
+  setInventoryLoading: (reportId, loading) => set((state) => {
+    const existing = state.inventory[reportId]
+    const defaults = {
+      items: [],
+      itemList: {},
+      loading: false,
+      systemName: "",
+      supportsMetadata: false,
+      actionLog: []
+    }
+    return {
+      inventory: {
+        ...state.inventory,
+        [reportId]: { ...defaults, ...existing, loading }
       }
     }
-  })),
+  }),
 
   setInventoryItems: (reportId, items) => set((state) => ({
     inventory: {

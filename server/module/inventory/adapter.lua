@@ -57,19 +57,17 @@ function CreateInventoryAdapter()
 
     if system == InventorySystem.OX_INVENTORY then
         DebugPrint("Initializing ox_inventory adapter")
-        local oxAdapter = require("server/module/inventory/adapters/ox")
-        if oxAdapter and oxAdapter.IsAvailable() then
-            InventoryAdapter = oxAdapter
-            PrintInfo(("Inventory adapter initialized: %s"):format(oxAdapter.GetName()))
-            return oxAdapter
+        if OxInventoryAdapter and OxInventoryAdapter.IsAvailable() then
+            InventoryAdapter = OxInventoryAdapter
+            PrintInfo(("Inventory adapter initialized: %s"):format(OxInventoryAdapter.GetName()))
+            return OxInventoryAdapter
         end
     elseif system == InventorySystem.ESX_DEFAULT then
         DebugPrint("Initializing ESX default inventory adapter")
-        local esxAdapter = require("server/module/inventory/adapters/esx")
-        if esxAdapter and esxAdapter.IsAvailable() then
-            InventoryAdapter = esxAdapter
-            PrintInfo(("Inventory adapter initialized: %s"):format(esxAdapter.GetName()))
-            return esxAdapter
+        if ESXInventoryAdapter and ESXInventoryAdapter.IsAvailable() then
+            InventoryAdapter = ESXInventoryAdapter
+            PrintInfo(("Inventory adapter initialized: %s"):format(ESXInventoryAdapter.GetName()))
+            return ESXInventoryAdapter
         end
     end
 

@@ -1,31 +1,32 @@
 ---ox_inventory adapter implementation
 ---@class OxInventoryAdapter : IInventoryAdapter
 
-local OxAdapter = {}
+---@type IInventoryAdapter
+OxInventoryAdapter = {}
 
 ---Check if ox_inventory is available
 ---@return boolean
-function OxAdapter.IsAvailable()
+function OxInventoryAdapter.IsAvailable()
     return GetResourceState("ox_inventory") == "started"
 end
 
 ---Get adapter name
 ---@return string
-function OxAdapter.GetName()
+function OxInventoryAdapter.GetName()
     return "ox_inventory"
 end
 
 ---Check if adapter supports metadata editing
 ---@return boolean
-function OxAdapter.SupportsMetadata()
+function OxInventoryAdapter.SupportsMetadata()
     return true
 end
 
 ---Get all items in player inventory
 ---@param playerId integer Player server ID
 ---@return InventoryItem[]
-function OxAdapter.GetPlayerInventory(playerId)
-    if not OxAdapter.IsAvailable() then
+function OxInventoryAdapter.GetPlayerInventory(playerId)
+    if not OxInventoryAdapter.IsAvailable() then
         return {}
     end
 
@@ -55,8 +56,8 @@ end
 ---@param playerId integer Player server ID
 ---@param itemName string Item name to find
 ---@return InventoryItem|nil
-function OxAdapter.GetItem(playerId, itemName)
-    if not OxAdapter.IsAvailable() then
+function OxInventoryAdapter.GetItem(playerId, itemName)
+    if not OxInventoryAdapter.IsAvailable() then
         return nil
     end
 
@@ -81,8 +82,8 @@ end
 ---@param count integer Amount to add
 ---@param metadata? table Optional metadata
 ---@return InventoryActionResult
-function OxAdapter.AddItem(playerId, itemName, count, metadata)
-    if not OxAdapter.IsAvailable() then
+function OxInventoryAdapter.AddItem(playerId, itemName, count, metadata)
+    if not OxInventoryAdapter.IsAvailable() then
         return { success = false, response = "ox_inventory not available" }
     end
 
@@ -102,8 +103,8 @@ end
 ---@param slot? integer Optional specific slot
 ---@param metadata? table Optional metadata filter
 ---@return InventoryActionResult
-function OxAdapter.RemoveItem(playerId, itemName, count, slot, metadata)
-    if not OxAdapter.IsAvailable() then
+function OxInventoryAdapter.RemoveItem(playerId, itemName, count, slot, metadata)
+    if not OxInventoryAdapter.IsAvailable() then
         return { success = false, response = "ox_inventory not available" }
     end
 
@@ -121,20 +122,20 @@ end
 ---@param itemName string Item name
 ---@param count integer Target count
 ---@return InventoryActionResult
-function OxAdapter.SetItemCount(playerId, itemName, count)
-    if not OxAdapter.IsAvailable() then
+function OxInventoryAdapter.SetItemCount(playerId, itemName, count)
+    if not OxInventoryAdapter.IsAvailable() then
         return { success = false, response = "ox_inventory not available" }
     end
 
-    local currentItem = OxAdapter.GetItem(playerId, itemName)
+    local currentItem = OxInventoryAdapter.GetItem(playerId, itemName)
     local currentCount = currentItem and currentItem.count or 0
 
     if count > currentCount then
         local diff = count - currentCount
-        return OxAdapter.AddItem(playerId, itemName, diff)
+        return OxInventoryAdapter.AddItem(playerId, itemName, diff)
     elseif count < currentCount then
         local diff = currentCount - count
-        return OxAdapter.RemoveItem(playerId, itemName, diff)
+        return OxInventoryAdapter.RemoveItem(playerId, itemName, diff)
     end
 
     return { success = true, response = "Count unchanged" }
@@ -145,8 +146,8 @@ end
 ---@param slot integer Slot number
 ---@param metadata table New metadata
 ---@return InventoryActionResult
-function OxAdapter.SetItemMetadata(playerId, slot, metadata)
-    if not OxAdapter.IsAvailable() then
+function OxInventoryAdapter.SetItemMetadata(playerId, slot, metadata)
+    if not OxInventoryAdapter.IsAvailable() then
         return { success = false, response = "ox_inventory not available" }
     end
 
@@ -164,8 +165,8 @@ end
 ---@param itemName string Item name
 ---@param count integer Amount to check
 ---@return boolean
-function OxAdapter.CanCarryItem(playerId, itemName, count)
-    if not OxAdapter.IsAvailable() then
+function OxInventoryAdapter.CanCarryItem(playerId, itemName, count)
+    if not OxInventoryAdapter.IsAvailable() then
         return false
     end
 
@@ -174,8 +175,8 @@ end
 
 ---Get all registered items
 ---@return table<string, table>
-function OxAdapter.GetItemList()
-    if not OxAdapter.IsAvailable() then
+function OxInventoryAdapter.GetItemList()
+    if not OxInventoryAdapter.IsAvailable() then
         return {}
     end
 
@@ -183,4 +184,4 @@ function OxAdapter.GetItemList()
     return items or {}
 end
 
-return OxAdapter
+-- Global adapter registered as OxInventoryAdapter

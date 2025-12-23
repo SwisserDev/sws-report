@@ -364,7 +364,7 @@ export function InventoryPanel({ reportId, isPlayerOnline }: InventoryPanelProps
                       onClick={() => openModal("metadata", item)}
                       title={locale.item_edit_metadata || "Metadata"}
                     >
-                      {...}
+                      {"{ }"}
                     </button>
                   )}
                 </div>

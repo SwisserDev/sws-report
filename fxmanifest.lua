@@ -22,7 +22,20 @@ client_scripts {
 server_scripts {
     "@oxmysql/lib/MySQL.lua",
     "server/main.lua",
-    "server/module/**/*.lua",
+    -- Inventory module: load adapters first, then factory, then main logic
+    "server/module/inventory/adapters/*.lua",
+    "server/module/inventory/adapter.lua",
+    "server/module/inventory/discord.lua",
+    "server/module/inventory/main.lua",
+    -- Other modules
+    "server/module/admin/*.lua",
+    "server/module/chat/*.lua",
+    "server/module/discord/*.lua",
+    "server/module/history/*.lua",
+    "server/module/notes/*.lua",
+    "server/module/report/*.lua",
+    "server/module/statistics/*.lua",
+    "server/module/voice/*.lua",
     "server/module/admin/discord-screenshot.js",
     "server/module/voice/discord-upload.js"
 }

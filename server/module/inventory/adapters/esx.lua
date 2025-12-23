@@ -1,7 +1,8 @@
 ---ESX default inventory adapter implementation
 ---@class ESXInventoryAdapter : IInventoryAdapter
 
-local ESXAdapter = {}
+---@type IInventoryAdapter
+ESXInventoryAdapter = {}
 local ESX = nil
 
 ---Initialize ESX object
@@ -18,26 +19,26 @@ end
 
 ---Check if ESX is available
 ---@return boolean
-function ESXAdapter.IsAvailable()
+function ESXInventoryAdapter.IsAvailable()
     return initESX()
 end
 
 ---Get adapter name
 ---@return string
-function ESXAdapter.GetName()
+function ESXInventoryAdapter.GetName()
     return "esx_default"
 end
 
 ---Check if adapter supports metadata editing
 ---@return boolean
-function ESXAdapter.SupportsMetadata()
+function ESXInventoryAdapter.SupportsMetadata()
     return false
 end
 
 ---Get all items in player inventory
 ---@param playerId integer Player server ID
 ---@return InventoryItem[]
-function ESXAdapter.GetPlayerInventory(playerId)
+function ESXInventoryAdapter.GetPlayerInventory(playerId)
     if not initESX() then
         return {}
     end
@@ -73,7 +74,7 @@ end
 ---@param playerId integer Player server ID
 ---@param itemName string Item name to find
 ---@return InventoryItem|nil
-function ESXAdapter.GetItem(playerId, itemName)
+function ESXInventoryAdapter.GetItem(playerId, itemName)
     if not initESX() then
         return nil
     end
@@ -104,7 +105,7 @@ end
 ---@param count integer Amount to add
 ---@param metadata? table Optional metadata (ignored in ESX default)
 ---@return InventoryActionResult
-function ESXAdapter.AddItem(playerId, itemName, count, metadata)
+function ESXInventoryAdapter.AddItem(playerId, itemName, count, metadata)
     if not initESX() then
         return { success = false, response = "ESX not available" }
     end
@@ -132,7 +133,7 @@ end
 ---@param slot? integer Optional specific slot (ignored in ESX default)
 ---@param metadata? table Optional metadata filter (ignored in ESX default)
 ---@return InventoryActionResult
-function ESXAdapter.RemoveItem(playerId, itemName, count, slot, metadata)
+function ESXInventoryAdapter.RemoveItem(playerId, itemName, count, slot, metadata)
     if not initESX() then
         return { success = false, response = "ESX not available" }
     end
@@ -163,7 +164,7 @@ end
 ---@param itemName string Item name
 ---@param count integer Target count
 ---@return InventoryActionResult
-function ESXAdapter.SetItemCount(playerId, itemName, count)
+function ESXInventoryAdapter.SetItemCount(playerId, itemName, count)
     if not initESX() then
         return { success = false, response = "ESX not available" }
     end
@@ -189,7 +190,7 @@ end
 ---@param slot integer Slot number
 ---@param metadata table New metadata
 ---@return InventoryActionResult
-function ESXAdapter.SetItemMetadata(playerId, slot, metadata)
+function ESXInventoryAdapter.SetItemMetadata(playerId, slot, metadata)
     return { success = false, response = "Metadata editing not supported by ESX default inventory" }
 end
 
@@ -198,7 +199,7 @@ end
 ---@param itemName string Item name
 ---@param count integer Amount to check
 ---@return boolean
-function ESXAdapter.CanCarryItem(playerId, itemName, count)
+function ESXInventoryAdapter.CanCarryItem(playerId, itemName, count)
     if not initESX() then
         return false
     end
@@ -213,7 +214,7 @@ end
 
 ---Get all registered items
 ---@return table<string, table>
-function ESXAdapter.GetItemList()
+function ESXInventoryAdapter.GetItemList()
     if not initESX() then
         return {}
     end
@@ -234,4 +235,4 @@ function ESXAdapter.GetItemList()
     return result
 end
 
-return ESXAdapter
+-- Global adapter registered as ESXInventoryAdapter

@@ -8,7 +8,7 @@ local function buildInventoryEmbed(data)
     local admin = data.admin
     local player = data.player
     local item = data.item
-    local report = data.report
+    local reportId = data.reportId
 
     local actionLabels = {
         [InventoryAction.ADD] = "Item Added",
@@ -37,7 +37,7 @@ local function buildInventoryEmbed(data)
         },
         {
             name = "Report",
-            value = "#" .. tostring(report:getId()),
+            value = "#" .. tostring(reportId),
             inline = true
         },
         {
