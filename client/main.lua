@@ -248,27 +248,6 @@ RegisterNUICallback("getInventoryActionLog", function(data, cb)
     cb("ok")
 end)
 
----Handle screenshot request from server (ensures we're in RegisterNetEvent context for large payloads)
-RegisterNetEvent("sws-report:takeUserScreenshot", function(reportId)
-    -- Check if screenshot-basic is available
-    if GetResourceState("screenshot-basic") ~= "started" then
-        DebugPrint("Screenshot-basic not available")
-        return
-    end
-
-    DebugPrint(("User taking screenshot for report %s"):format(tostring(reportId)))
-
-    exports["screenshot-basic"]:requestScreenshot(function(base64Data)
-        DebugPrint(("User screenshot callback, data length: %s"):format(
-            base64Data and #base64Data or "nil"
-        ))
-
-        if base64Data then
-            TriggerServerEvent("sws-report:userScreenshot", reportId, base64Data)
-        end
-    end)
-end)
-
 -- Server Events
 RegisterNetEvent("sws-report:setPlayerData", function(data)
     playerIdentifier = data.identifier
