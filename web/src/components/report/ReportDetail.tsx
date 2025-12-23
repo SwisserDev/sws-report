@@ -9,10 +9,11 @@ import { PrioritySelector } from "@/components/ui/PrioritySelector"
 import { ReportChat } from "./ReportChat"
 import { ReportNotes } from "./ReportNotes"
 import { PlayerInfoPanel } from "./PlayerInfoPanel"
+import { InventoryPanel } from "./InventoryPanel"
 import { formatTimestamp } from "@/lib/utils"
 
 type ActionTab = "report" | "player" | "moderation"
-type DetailTab = "chat" | "notes"
+type DetailTab = "chat" | "notes" | "inventory"
 
 export function ReportDetail() {
   const { getSelectedReport, playerData, categories, locale, activeTab } = useReportStore()
@@ -177,11 +178,23 @@ export function ReportDetail() {
             >
               {locale.admin_notes || "Notes"}
             </button>
+            <button
+              onClick={() => setDetailTab("inventory")}
+              className={`px-4 py-2 text-xs font-medium transition-colors border-b-2 -mb-px ${
+                detailTab === "inventory"
+                  ? "border-accent text-text-primary"
+                  : "border-transparent text-text-tertiary hover:text-text-secondary"
+              }`}
+            >
+              {locale.inventory || "Inventory"}
+            </button>
           </div>
           {detailTab === "chat" ? (
             <ReportChat report={report} />
-          ) : (
+          ) : detailTab === "notes" ? (
             <ReportNotes reportId={report.id} />
+          ) : (
+            <InventoryPanel reportId={report.id} isPlayerOnline={report.isPlayerOnline} />
           )}
         </div>
       ) : (

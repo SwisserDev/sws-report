@@ -149,7 +149,8 @@ Config.Discord = {
         reportDeleted = true,
         chatMessage = false,    -- Disabled by default (can be spammy)
         voiceMessage = true,
-        adminAction = true
+        adminAction = true,
+        inventoryAction = true  -- Log inventory management actions
     },
 
     -- Embed Colors (decimal)
@@ -159,7 +160,8 @@ Config.Discord = {
         resolved = 3066993,     -- Green
         deleted = 15158332,     -- Red
         message = 7506394,      -- Purple
-        admin = 16753920        -- Orange
+        admin = 16753920,       -- Orange
+        inventory = 10181046    -- Purple (Inventory actions)
     }
 }
 
@@ -174,4 +176,35 @@ Config.VoiceMessages = {
     enabled = true,
     maxDurationSeconds = 60,
     maxFileSizeKB = 7500    -- 7.5MB to stay under Discord 8MB limit
+}
+
+---@class InventoryAllowedActions
+---@field add boolean Allow adding items to player inventory
+---@field remove boolean Allow removing items from player inventory
+---@field set boolean Allow setting item count directly
+---@field metadata_edit boolean Allow editing item metadata (ox_inventory only)
+
+---@class InventoryConfig
+---@field enabled boolean Enable inventory management feature
+---@field allowedActions InventoryAllowedActions Actions admins can perform
+---@field logToDiscord boolean Log inventory changes to Discord webhook
+---@field maxItemCount number Maximum items per single action (safety limit)
+
+-- Inventory Management Settings
+Config.Inventory = {
+    enabled = true,
+
+    -- Which actions admins can perform
+    allowedActions = {
+        add = true,
+        remove = true,
+        set = true,
+        metadata_edit = true    -- ox_inventory only, ESX default does not support metadata
+    },
+
+    -- Discord logging (uses same webhook as main Discord config)
+    logToDiscord = true,
+
+    -- Safety limits
+    maxItemCount = 1000         -- Maximum items per single action
 }

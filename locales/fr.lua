@@ -227,5 +227,73 @@ return {
     ["identifier_discord"] = "Discord",
     ["identifier_fivem"] = "FiveM",
     ["copied"] = "Copié !",
-    ["copy_hint"] = "Ctrl+C pour copier"
+    ["copy_hint"] = "Ctrl+C pour copier",
+
+    -- Gestion d'inventaire
+    ["inventory"] = "Inventaire",
+    ["inventory_management"] = "Gestion d'inventaire",
+    ["inventory_items"] = "Objets",
+    ["inventory_empty"] = "L'inventaire du joueur est vide",
+    ["inventory_loading"] = "Chargement de l'inventaire...",
+    ["inventory_unavailable"] = "Système d'inventaire non disponible",
+    ["inventory_player_offline"] = "Impossible de voir l'inventaire - joueur hors ligne",
+    ["inventory_system"] = "Système d'inventaire",
+    ["inventory_refresh"] = "Actualiser",
+
+    -- Actions sur les objets
+    ["item_add"] = "Ajouter un objet",
+    ["item_remove"] = "Retirer un objet",
+    ["item_set_count"] = "Définir la quantité",
+    ["item_edit_metadata"] = "Modifier les métadonnées",
+    ["item_name"] = "Nom de l'objet",
+    ["item_label"] = "Libellé",
+    ["item_count"] = "Quantité",
+    ["item_slot"] = "Emplacement",
+    ["item_weight"] = "Poids",
+    ["item_metadata"] = "Métadonnées",
+    ["item_durability"] = "Durabilité",
+    ["item_serial"] = "Numéro de série",
+    ["item_select"] = "Sélectionner un objet",
+    ["item_search"] = "Rechercher des objets...",
+
+    -- Résultats des actions d'inventaire
+    ["inventory_item_added"] = "%dx %s ajouté à l'inventaire du joueur",
+    ["inventory_item_removed"] = "%dx %s retiré de l'inventaire du joueur",
+    ["inventory_item_set"] = "Quantité de %s définie à %d",
+    ["inventory_metadata_updated"] = "Métadonnées de %s mises à jour",
+    ["inventory_action_failed"] = "Action d'inventaire échouée : %s",
+    ["inventory_action_success"] = "Action d'inventaire terminée",
+
+    -- Journal des actions d'inventaire
+    ["inventory_action_log"] = "Journal des actions",
+    ["inventory_recent_actions"] = "Actions récentes",
+    ["inventory_no_actions"] = "Aucune action récente",
+
+    -- Erreurs d'inventaire
+    ["error_inventory_disabled"] = "La gestion d'inventaire est désactivée",
+    ["error_invalid_item"] = "Nom d'objet invalide",
+    ["error_invalid_count"] = "Quantité invalide",
+    ["error_invalid_slot"] = "Numéro d'emplacement invalide",
+    ["error_item_not_found"] = "Objet non trouvé dans l'inventaire",
+    ["error_insufficient_items"] = "Le joueur n'a pas assez d'objets",
+    ["error_inventory_full"] = "L'inventaire du joueur est plein",
+    ["error_metadata_not_supported"] = "La modification des métadonnées n'est pas prise en charge par ce système d'inventaire",
+    ["error_max_item_count"] = "Impossible d'ajouter plus de %d objets à la fois",
+
+    -- Confirmation d'inventaire
+    ["confirm_add_item"] = "Ajouter %dx %s à l'inventaire de %s ?",
+    ["confirm_remove_item"] = "Retirer %dx %s de l'inventaire de %s ?",
+    ["confirm_set_item"] = "Définir la quantité de %s de %s à %d ?",
+
+    -- Messages système d'inventaire
+    ["action_add_item"] = "%s a ajouté %dx %s à l'inventaire du joueur",
+    ["action_remove_item"] = "%s a retiré %dx %s de l'inventaire du joueur",
+    ["action_set_item"] = "%s a défini la quantité de %s du joueur à %d",
+    ["action_edit_metadata"] = "%s a modifié les métadonnées de %s",
+
+    -- Inventaire Discord
+    ["discord_inventory_action"] = "Action d'inventaire",
+    ["discord_action_type"] = "Action",
+    ["discord_item_details"] = "Détails de l'objet",
+    ["discord_count_change"] = "Changement de quantité"
 }

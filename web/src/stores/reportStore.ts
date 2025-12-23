@@ -1,6 +1,16 @@
 import { create } from "zustand"
-import type { Report, Message, PlayerData, CategoryConfig, PriorityConfig, Notification, ReportFilter, ReportNote, PlayerNote, PlayerHistory, Statistics } from "@/types"
+import type { Report, Message, PlayerData, CategoryConfig, PriorityConfig, Notification, ReportFilter, ReportNote, PlayerNote, PlayerHistory, Statistics, InventoryItem, InventoryItemInfo, InventoryChangeLog } from "@/types"
 import { generateId } from "@/lib/utils"
+
+interface InventoryState {
+  items: InventoryItem[]
+  itemList: Record<string, InventoryItemInfo>
+  loading: boolean
+  error?: string
+  systemName: string
+  supportsMetadata: boolean
+  actionLog: InventoryChangeLog[]
+}
 
 interface ReportState {
   // UI State
@@ -31,6 +41,9 @@ interface ReportState {
 
   // Statistics
   statistics: Statistics | null
+
+  // Inventory
+  inventory: Record<number, InventoryState>
 
   // Filters
   filter: ReportFilter
@@ -70,6 +83,13 @@ interface ReportState {
   setPlayerHistory: (history: PlayerHistory) => void
   setStatistics: (statistics: Statistics) => void
 
+  // Inventory Actions
+  setInventory: (reportId: number, data: Partial<InventoryState>) => void
+  setInventoryLoading: (reportId: number, loading: boolean) => void
+  setInventoryItems: (reportId: number, items: InventoryItem[]) => void
+  setInventoryActionLog: (reportId: number, logs: InventoryChangeLog[]) => void
+  getInventory: (reportId: number) => InventoryState | undefined
+
   // Notification Actions
   addNotification: (notification: Omit<Notification, "id">) => void
   removeNotification: (id: string) => void
@@ -102,6 +122,7 @@ export const useReportStore = create<ReportState>((set, get) => ({
   playerNotes: {},
   playerHistory: null,
   statistics: null,
+  inventory: {},
   filter: {
     status: "all",
     category: "all"
@@ -270,6 +291,64 @@ export const useReportStore = create<ReportState>((set, get) => ({
 
   setPlayerHistory: (history) => set({ playerHistory: history }),
   setStatistics: (statistics) => set({ statistics }),
+
+  // Inventory Actions
+  setInventory: (reportId, data) => set((state) => ({
+    inventory: {
+      ...state.inventory,
+      [reportId]: {
+        items: [],
+        itemList: {},
+        loading: false,
+        systemName: "",
+        supportsMetadata: false,
+        actionLog: [],
+        ...state.inventory[reportId],
+        ...data
+      }
+    }
+  })),
+
+  setInventoryLoading: (reportId, loading) => set((state) => ({
+    inventory: {
+      ...state.inventory,
+      [reportId]: {
+        items: [],
+        itemList: {},
+        loading,
+        systemName: "",
+        supportsMetadata: false,
+        actionLog: [],
+        ...state.inventory[reportId],
+        loading
+      }
+    }
+  })),
+
+  setInventoryItems: (reportId, items) => set((state) => ({
+    inventory: {
+      ...state.inventory,
+      [reportId]: {
+        ...state.inventory[reportId],
+        items,
+        loading: false
+      }
+    }
+  })),
+
+  setInventoryActionLog: (reportId, logs) => set((state) => ({
+    inventory: {
+      ...state.inventory,
+      [reportId]: {
+        ...state.inventory[reportId],
+        actionLog: logs
+      }
+    }
+  })),
+
+  getInventory: (reportId) => {
+    return get().inventory[reportId]
+  },
 
   // Getters
   getSelectedReport: () => {

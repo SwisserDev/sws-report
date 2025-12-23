@@ -48,6 +48,14 @@ AdminAction = {
     RAGDOLL_PLAYER = "ragdoll_player"
 }
 
+---@enum InventoryAction
+InventoryAction = {
+    ADD = "add",
+    REMOVE = "remove",
+    SET = "set",
+    METADATA_EDIT = "metadata_edit"
+}
+
 ---@enum NuiMessageType
 NuiMessageType = {
     SHOW_UI = "SHOW_UI",
@@ -66,5 +74,8 @@ NuiMessageType = {
     NOTIFICATION = "NOTIFICATION",
     PLAY_SOUND = "PLAY_SOUND",
     UPDATE_PLAYER_ONLINE = "UPDATE_PLAYER_ONLINE",
-    SET_STATISTICS = "SET_STATISTICS"
+    SET_STATISTICS = "SET_STATISTICS",
+    SET_PLAYER_INVENTORY = "SET_PLAYER_INVENTORY",
+    INVENTORY_UPDATED = "INVENTORY_UPDATED",
+    SET_INVENTORY_SYSTEM = "SET_INVENTORY_SYSTEM"
 }
