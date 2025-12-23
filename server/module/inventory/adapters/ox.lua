@@ -151,12 +151,14 @@ function OxInventoryAdapter.SetItemMetadata(playerId, slot, metadata)
         return { success = false, response = "ox_inventory not available" }
     end
 
-    local success = exports.ox_inventory:SetMetadata(playerId, slot, metadata)
+    local success, err = pcall(function()
+        exports.ox_inventory:SetMetadata(playerId, slot, metadata)
+    end)
 
     if success then
         return { success = true, response = "Metadata updated" }
     else
-        return { success = false, response = "Failed to update metadata" }
+        return { success = false, response = err or "Failed to update metadata" }
     end
 end
 
