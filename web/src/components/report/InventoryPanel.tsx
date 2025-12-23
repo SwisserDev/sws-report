@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useReportStore } from "@/stores/reportStore"
 import { useNuiActions } from "@/hooks/useNui"
 import { Button } from "@/components/ui"
-import type { InventoryItem } from "@/types"
+import type { InventoryItem, InventoryItemInfo } from "@/types"
 
 interface InventoryPanelProps {
   reportId: number
@@ -17,7 +17,7 @@ interface ItemActionModalProps {
   reportId: number
   item?: InventoryItem
   action: "add" | "remove" | "set" | "metadata"
-  itemList: Record<string, { name: string; label: string }>
+  itemList: Record<string, InventoryItemInfo>
 }
 
 function ItemActionModal({ isOpen, onClose, reportId, item, action, itemList }: ItemActionModalProps) {
@@ -113,13 +113,23 @@ function ItemActionModal({ isOpen, onClose, reportId, item, action, itemList }: 
                   {filteredItems.slice(0, 50).map(([name, info]) => (
                     <button
                       key={name}
-                      className={`w-full px-3 py-2 text-left text-sm hover:bg-bg-secondary transition-colors ${
+                      className={`w-full px-3 py-2 text-left text-sm hover:bg-bg-secondary transition-colors flex items-center gap-2 ${
                         selectedItem === name ? "bg-accent/20 text-accent" : "text-text-primary"
                       }`}
                       onClick={() => setSelectedItem(name)}
                     >
+                      {info.image && (
+                        <img
+                          src={info.image}
+                          alt={info.label}
+                          className="w-6 h-6 object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = "none"
+                          }}
+                        />
+                      )}
                       <span className="font-medium">{info.label}</span>
-                      <span className="text-text-tertiary ml-2">({name})</span>
+                      <span className="text-text-tertiary ml-auto">({name})</span>
                     </button>
                   ))}
                 </div>
@@ -128,7 +138,17 @@ function ItemActionModal({ isOpen, onClose, reportId, item, action, itemList }: 
 
             {/* Selected Item Display */}
             {(item || selectedItem) && (
-              <div className="mb-4 p-2 bg-bg-tertiary rounded-lg">
+              <div className="mb-4 p-2 bg-bg-tertiary rounded-lg flex items-center gap-2">
+                {(item?.image || itemList[selectedItem]?.image) && (
+                  <img
+                    src={item?.image || itemList[selectedItem]?.image}
+                    alt={item?.label || itemList[selectedItem]?.label || selectedItem}
+                    className="w-8 h-8 object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none"
+                    }}
+                  />
+                )}
                 <span className="text-text-primary text-sm">
                   {item?.label || itemList[selectedItem]?.label || selectedItem}
                 </span>
@@ -318,12 +338,27 @@ export function InventoryPanel({ reportId, isPlayerOnline }: InventoryPanelProps
                 key={`${item.name}-${item.slot || idx}`}
                 className="bg-bg-tertiary border border-border rounded-lg p-3 hover:border-accent/50 transition-colors group"
               >
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-text-primary truncate">{item.label}</p>
-                    <p className="text-xs text-text-tertiary truncate">{item.name}</p>
+                <div className="flex gap-2 mb-2">
+                  {/* Item Image */}
+                  {item.image && (
+                    <div className="w-10 h-10 flex-shrink-0 bg-bg-secondary rounded overflow-hidden">
+                      <img
+                        src={item.image}
+                        alt={item.label}
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none"
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0 flex justify-between items-start">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-text-primary truncate">{item.label}</p>
+                      <p className="text-xs text-text-tertiary truncate">{item.name}</p>
+                    </div>
+                    <span className="text-sm font-bold text-accent ml-2">x{item.count}</span>
                   </div>
-                  <span className="text-sm font-bold text-accent ml-2">x{item.count}</span>
                 </div>
 
                 {/* Item Details */}

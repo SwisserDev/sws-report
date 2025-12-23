@@ -4,6 +4,29 @@
 ---@type IInventoryAdapter
 OxInventoryAdapter = {}
 
+---Get the image path from convar
+---@return string imagePath Base path for item images
+local function getImagePath()
+    return GetConvar("inventory:imagepath", "nui://ox_inventory/web/images")
+end
+
+---Build image URL for an item
+---@param itemName string Item name
+---@param customImage? string Optional custom image path from item config
+---@return string imageUrl Full image URL
+local function buildImageUrl(itemName, customImage)
+    if customImage then
+        -- If it's already an absolute path (nui:// or http), use it directly
+        if customImage:match("^nui://") or customImage:match("^https?://") then
+            return customImage
+        end
+        -- Otherwise, it's a filename - append to image path
+        return getImagePath() .. "/" .. customImage
+    end
+    -- Default: itemName.png
+    return getImagePath() .. "/" .. itemName .. ".png"
+end
+
 ---Check if ox_inventory is available
 ---@return boolean
 function OxInventoryAdapter.IsAvailable()
@@ -35,16 +58,21 @@ function OxInventoryAdapter.GetPlayerInventory(playerId)
         return {}
     end
 
+    local allItems = exports.ox_inventory:Items()
     local result = {}
+
     for slot, item in pairs(items) do
         if item and item.name then
+            local itemData = allItems and allItems[item.name]
+            local customImage = itemData and itemData.client and itemData.client.image
             table.insert(result, {
                 name = item.name,
                 label = item.label or item.name,
                 count = item.count or 1,
                 slot = slot,
                 weight = item.weight,
-                metadata = item.metadata
+                metadata = item.metadata,
+                image = buildImageUrl(item.name, customImage)
             })
         end
     end
@@ -175,7 +203,7 @@ function OxInventoryAdapter.CanCarryItem(playerId, itemName, count)
     return exports.ox_inventory:CanCarryItem(playerId, itemName, count)
 end
 
----Get all registered items
+---Get all registered items with image URLs
 ---@return table<string, table>
 function OxInventoryAdapter.GetItemList()
     if not OxInventoryAdapter.IsAvailable() then
@@ -183,7 +211,22 @@ function OxInventoryAdapter.GetItemList()
     end
 
     local items = exports.ox_inventory:Items()
-    return items or {}
+    if not items then
+        return {}
+    end
+
+    local result = {}
+    for name, item in pairs(items) do
+        local customImage = item.client and item.client.image
+        result[name] = {
+            name = name,
+            label = item.label or name,
+            weight = item.weight or 0,
+            image = buildImageUrl(name, customImage)
+        }
+    end
+
+    return result
 end
 
 -- Global adapter registered as OxInventoryAdapter

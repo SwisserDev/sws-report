@@ -171,12 +171,14 @@ export interface InventoryItem {
   slot?: number
   weight?: number
   metadata?: Record<string, unknown>
+  image?: string
 }
 
 export interface InventoryItemInfo {
   name: string
   label: string
   weight?: number
+  image?: string
 }
 
 export interface InventoryState {
