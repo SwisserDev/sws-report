@@ -167,7 +167,14 @@ AddEventHandler("sws-report:onClaimed", function(report, adminId) end)
 AddEventHandler("sws-report:onResolved", function(report, adminId) end)
 ```
 
-Full API documentation: [`docs/api.md`](docs/api.md)
+---
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [INVENTORY.md](INVENTORY.md) | Inventory management setup, usage & custom adapters |
+| [UPGRADING.md](UPGRADING.md) | Migration guide for version upgrades |
 
 ---
 
