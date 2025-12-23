@@ -126,7 +126,7 @@ RegisterNetEvent("sws-report:getMessages", function(reportId)
     if VoiceMessagesAvailable then
         query = [[
             SELECT id, report_id, sender_id, sender_name, sender_type,
-                   message, message_type, audio_url, audio_duration, created_at
+                   message, message_type, image_url, audio_url, audio_duration, created_at
             FROM report_messages
             WHERE report_id = ?
             ORDER BY created_at ASC
@@ -134,7 +134,7 @@ RegisterNetEvent("sws-report:getMessages", function(reportId)
     else
         query = [[
             SELECT id, report_id, sender_id, sender_name, sender_type,
-                   message, created_at
+                   message, image_url, created_at
             FROM report_messages
             WHERE report_id = ?
             ORDER BY created_at ASC
