@@ -33,7 +33,7 @@ The system auto-detects which inventory is running. No configuration needed.
 ### 1. Run the Migration
 
 ```bash
-mysql -u root -p your_database < sql/migration_inventory_changes.sql
+mysql -u root -p your_database < sql/migration_1.0.6_inventory_changes.sql
 ```
 
 Or paste the contents into HeidiSQL/phpMyAdmin.

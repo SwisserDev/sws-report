@@ -4,7 +4,7 @@
 
 [![Build](https://github.com/SwisserDev/sws-report/actions/workflows/build.yml/badge.svg)](https://github.com/SwisserDev/sws-report/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](https://github.com/SwisserDev/sws-report/releases)
+[![Version](https://img.shields.io/badge/version-1.0.6-green.svg)](https://github.com/SwisserDev/sws-report/releases)
 [![Lua](https://img.shields.io/badge/Lua-5.4-2C2D72?logo=lua&logoColor=white)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](#)
 [![FiveM](https://img.shields.io/badge/FiveM-Ready-F40552)](#)
@@ -56,6 +56,7 @@ Standalone report system for FiveM with live chat, admin tools, and Discord inte
 - **Moderation Tools** - Teleport, heal, freeze, spectate, kick
 - **Discord Integration** - Webhook logging for all events
 - **Statistics Dashboard** - Track team performance
+- **Inventory Management** - View/modify player items (ox_inventory, ESX)
 - **Multi-Language** - English & German included
 - **Dark/Light Theme** - User preference saved
 
@@ -87,6 +88,9 @@ ensure sws-report
 
 # 5. (Optional) Enable voice messages
 mysql -u root -p your_database < resources/sws-report/sql/migrate_voice_messages.sql
+
+# 6. (Optional) Enable inventory management
+mysql -u root -p your_database < resources/sws-report/sql/migration_1.0.6_inventory_changes.sql
 ```
 
 > **Upgrading from an older version?** See [UPGRADING.md](UPGRADING.md)
@@ -122,6 +126,13 @@ Config.VoiceMessages = {
     maxDurationSeconds = 60,
     maxFileSizeKB = 7500
 }
+
+-- Inventory Management (optional, requires migration)
+Config.Inventory = {
+    enabled = true,
+    allowedActions = { add = true, remove = true, set = true, metadata_edit = true },
+    maxItemCount = 1000
+}
 ```
 
 ---
@@ -138,6 +149,8 @@ Config.VoiceMessages = {
 exports["sws-report"]:IsAdmin(source)
 exports["sws-report"]:GetReports(filter)
 exports["sws-report"]:CloseReport(reportId)
+exports["sws-report"]:IsInventoryAvailable()
+exports["sws-report"]:GetInventorySystemName()
 ```
 
 ### Client Exports
