@@ -227,5 +227,73 @@ return {
     ["identifier_discord"] = "Discord",
     ["identifier_fivem"] = "FiveM",
     ["copied"] = "Copied!",
-    ["copy_hint"] = "Ctrl+C to copy"
+    ["copy_hint"] = "Ctrl+C to copy",
+
+    -- Inventory Management
+    ["inventory"] = "Inventory",
+    ["inventory_management"] = "Inventory Management",
+    ["inventory_items"] = "Items",
+    ["inventory_empty"] = "Player inventory is empty",
+    ["inventory_loading"] = "Loading inventory...",
+    ["inventory_unavailable"] = "Inventory system not available",
+    ["inventory_player_offline"] = "Cannot view inventory - player is offline",
+    ["inventory_system"] = "Inventory System",
+    ["inventory_refresh"] = "Refresh",
+
+    -- Inventory Item Actions
+    ["item_add"] = "Add Item",
+    ["item_remove"] = "Remove Item",
+    ["item_set_count"] = "Set Count",
+    ["item_edit_metadata"] = "Edit Metadata",
+    ["item_name"] = "Item Name",
+    ["item_label"] = "Label",
+    ["item_count"] = "Count",
+    ["item_slot"] = "Slot",
+    ["item_weight"] = "Weight",
+    ["item_metadata"] = "Metadata",
+    ["item_durability"] = "Durability",
+    ["item_serial"] = "Serial Number",
+    ["item_select"] = "Select Item",
+    ["item_search"] = "Search items...",
+
+    -- Inventory Action Results
+    ["inventory_item_added"] = "Added %dx %s to player inventory",
+    ["inventory_item_removed"] = "Removed %dx %s from player inventory",
+    ["inventory_item_set"] = "Set %s count to %d",
+    ["inventory_metadata_updated"] = "Updated metadata for %s",
+    ["inventory_action_failed"] = "Inventory action failed: %s",
+    ["inventory_action_success"] = "Inventory action completed",
+
+    -- Inventory Action Log
+    ["inventory_action_log"] = "Action Log",
+    ["inventory_recent_actions"] = "Recent Actions",
+    ["inventory_no_actions"] = "No recent actions",
+
+    -- Inventory Errors
+    ["error_inventory_disabled"] = "Inventory management is disabled",
+    ["error_invalid_item"] = "Invalid item name",
+    ["error_invalid_count"] = "Invalid item count",
+    ["error_invalid_slot"] = "Invalid slot number",
+    ["error_item_not_found"] = "Item not found in inventory",
+    ["error_insufficient_items"] = "Player does not have enough items",
+    ["error_inventory_full"] = "Player inventory is full",
+    ["error_metadata_not_supported"] = "Metadata editing not supported by this inventory system",
+    ["error_max_item_count"] = "Cannot add more than %d items at once",
+
+    -- Inventory Confirmation
+    ["confirm_add_item"] = "Add %dx %s to %s's inventory?",
+    ["confirm_remove_item"] = "Remove %dx %s from %s's inventory?",
+    ["confirm_set_item"] = "Set %s's %s count to %d?",
+
+    -- Inventory System Messages
+    ["action_add_item"] = "%s added %dx %s to player inventory",
+    ["action_remove_item"] = "%s removed %dx %s from player inventory",
+    ["action_set_item"] = "%s set player's %s count to %d",
+    ["action_edit_metadata"] = "%s edited metadata for %s",
+
+    -- Inventory Discord
+    ["discord_inventory_action"] = "Inventory Action",
+    ["discord_action_type"] = "Action",
+    ["discord_item_details"] = "Item Details",
+    ["discord_count_change"] = "Count Change"
 }

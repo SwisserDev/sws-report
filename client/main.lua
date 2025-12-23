@@ -217,6 +217,37 @@ RegisterNUICallback("takeScreenshot", function(data, cb)
     TriggerServerEvent("sws-report:requestUserScreenshot", reportId)
 end)
 
+-- Inventory Management NUI Callbacks
+RegisterNUICallback("getPlayerInventory", function(data, cb)
+    TriggerServerEvent("sws-report:getPlayerInventory", data.reportId)
+    cb("ok")
+end)
+
+RegisterNUICallback("addInventoryItem", function(data, cb)
+    TriggerServerEvent("sws-report:addInventoryItem", data.reportId, data.itemName, data.count, data.metadata)
+    cb("ok")
+end)
+
+RegisterNUICallback("removeInventoryItem", function(data, cb)
+    TriggerServerEvent("sws-report:removeInventoryItem", data.reportId, data.itemName, data.count, data.slot)
+    cb("ok")
+end)
+
+RegisterNUICallback("setInventoryItemCount", function(data, cb)
+    TriggerServerEvent("sws-report:setInventoryItemCount", data.reportId, data.itemName, data.count)
+    cb("ok")
+end)
+
+RegisterNUICallback("setInventoryItemMetadata", function(data, cb)
+    TriggerServerEvent("sws-report:setInventoryItemMetadata", data.reportId, data.slot, data.metadata)
+    cb("ok")
+end)
+
+RegisterNUICallback("getInventoryActionLog", function(data, cb)
+    TriggerServerEvent("sws-report:getInventoryActionLog", data.reportId, data.limit)
+    cb("ok")
+end)
+
 ---Handle screenshot request from server (ensures we're in RegisterNetEvent context for large payloads)
 RegisterNetEvent("sws-report:takeUserScreenshot", function(reportId)
     -- Check if screenshot-basic is available
@@ -521,6 +552,34 @@ RegisterNetEvent("sws-report:setStatistics", function(stats)
         SendNUIMessage({
             type = "SET_STATISTICS",
             data = stats
+        })
+    end
+end)
+
+-- Inventory Management Server Events
+RegisterNetEvent("sws-report:setPlayerInventory", function(data)
+    if isUIOpen and isAdmin then
+        SendNUIMessage({
+            type = NuiMessageType.SET_PLAYER_INVENTORY,
+            data = data
+        })
+    end
+end)
+
+RegisterNetEvent("sws-report:inventoryUpdated", function(data)
+    if isUIOpen and isAdmin then
+        SendNUIMessage({
+            type = NuiMessageType.INVENTORY_UPDATED,
+            data = data
+        })
+    end
+end)
+
+RegisterNetEvent("sws-report:setInventoryActionLog", function(data)
+    if isUIOpen and isAdmin then
+        SendNUIMessage({
+            type = "SET_INVENTORY_ACTION_LOG",
+            data = data
         })
     end
 end)

@@ -160,3 +160,49 @@ export interface Statistics {
   adminLeaderboard: AdminStats[]
   recentActivity: { date: string; count: number }[]
 }
+
+// Inventory Management Types
+export type InventoryAction = "add" | "remove" | "set" | "metadata_edit"
+
+export interface InventoryItem {
+  name: string
+  label: string
+  count: number
+  slot?: number
+  weight?: number
+  metadata?: Record<string, unknown>
+  image?: string
+}
+
+export interface InventoryItemInfo {
+  name: string
+  label: string
+  weight?: number
+  image?: string
+}
+
+export interface InventoryState {
+  items: InventoryItem[]
+  itemList: Record<string, InventoryItemInfo>
+  loading: boolean
+  error?: string
+  systemName: string
+  supportsMetadata: boolean
+}
+
+export interface InventoryChangeLog {
+  id: number
+  adminId: string
+  adminName: string
+  playerId: string
+  playerName: string
+  reportId: number
+  action: InventoryAction
+  itemName: string
+  itemLabel: string
+  countBefore: number
+  countAfter: number
+  metadataBefore?: string
+  metadataAfter?: string
+  createdAt: string
+}

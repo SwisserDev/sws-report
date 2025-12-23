@@ -217,5 +217,73 @@ return {
     ["identifier_discord"] = "Discord",
     ["identifier_fivem"] = "FiveM",
     ["copied"] = "コピーしました！",
-    ["copy_hint"] = "Ctrl+C でコピー"
+    ["copy_hint"] = "Ctrl+C でコピー",
+
+    -- インベントリ管理
+    ["inventory"] = "インベントリ",
+    ["inventory_management"] = "インベントリ管理",
+    ["inventory_items"] = "アイテム",
+    ["inventory_empty"] = "プレイヤーのインベントリは空です",
+    ["inventory_loading"] = "インベントリを読み込み中...",
+    ["inventory_unavailable"] = "インベントリシステムが利用できません",
+    ["inventory_player_offline"] = "インベントリを表示できません - プレイヤーはオフラインです",
+    ["inventory_system"] = "インベントリシステム",
+    ["inventory_refresh"] = "更新",
+
+    -- アイテムアクション
+    ["item_add"] = "アイテム追加",
+    ["item_remove"] = "アイテム削除",
+    ["item_set_count"] = "数量設定",
+    ["item_edit_metadata"] = "メタデータ編集",
+    ["item_name"] = "アイテム名",
+    ["item_label"] = "ラベル",
+    ["item_count"] = "数量",
+    ["item_slot"] = "スロット",
+    ["item_weight"] = "重量",
+    ["item_metadata"] = "メタデータ",
+    ["item_durability"] = "耐久度",
+    ["item_serial"] = "シリアル番号",
+    ["item_select"] = "アイテムを選択",
+    ["item_search"] = "アイテムを検索...",
+
+    -- インベントリアクション結果
+    ["inventory_item_added"] = "%dx %s をプレイヤーのインベントリに追加しました",
+    ["inventory_item_removed"] = "%dx %s をプレイヤーのインベントリから削除しました",
+    ["inventory_item_set"] = "%s の数量を %d に設定しました",
+    ["inventory_metadata_updated"] = "%s のメタデータを更新しました",
+    ["inventory_action_failed"] = "インベントリアクションが失敗しました: %s",
+    ["inventory_action_success"] = "インベントリアクションが完了しました",
+
+    -- インベントリアクションログ
+    ["inventory_action_log"] = "アクションログ",
+    ["inventory_recent_actions"] = "最近のアクション",
+    ["inventory_no_actions"] = "アクションはありません",
+
+    -- インベントリエラー
+    ["error_inventory_disabled"] = "インベントリ管理は無効です",
+    ["error_invalid_item"] = "無効なアイテム名",
+    ["error_invalid_count"] = "無効な数量",
+    ["error_invalid_slot"] = "無効なスロット番号",
+    ["error_item_not_found"] = "インベントリにアイテムが見つかりません",
+    ["error_insufficient_items"] = "プレイヤーのアイテムが不足しています",
+    ["error_inventory_full"] = "プレイヤーのインベントリがいっぱいです",
+    ["error_metadata_not_supported"] = "このインベントリシステムではメタデータの編集はサポートされていません",
+    ["error_max_item_count"] = "一度に %d 個以上のアイテムは追加できません",
+
+    -- インベントリ確認
+    ["confirm_add_item"] = "%dx %s を %s のインベントリに追加しますか？",
+    ["confirm_remove_item"] = "%dx %s を %s のインベントリから削除しますか？",
+    ["confirm_set_item"] = "%s の %s の数量を %d に設定しますか？",
+
+    -- インベントリシステムメッセージ
+    ["action_add_item"] = "%s が %dx %s をプレイヤーのインベントリに追加しました",
+    ["action_remove_item"] = "%s が %dx %s をプレイヤーのインベントリから削除しました",
+    ["action_set_item"] = "%s がプレイヤーの %s の数量を %d に設定しました",
+    ["action_edit_metadata"] = "%s が %s のメタデータを編集しました",
+
+    -- インベントリ Discord
+    ["discord_inventory_action"] = "インベントリアクション",
+    ["discord_action_type"] = "アクション",
+    ["discord_item_details"] = "アイテム詳細",
+    ["discord_count_change"] = "数量変更"
 }

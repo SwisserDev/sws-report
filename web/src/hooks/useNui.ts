@@ -3,7 +3,7 @@
 import { useEffect, useCallback } from "react"
 import { useReportStore } from "@/stores/reportStore"
 import { fetchNui, registerNuiListener, playSound } from "@/lib/nui"
-import type { Report, Message, PlayerData, CategoryConfig, PriorityConfig, ReportNote, PlayerNote, PlayerHistory, Statistics } from "@/types"
+import type { Report, Message, PlayerData, CategoryConfig, PriorityConfig, ReportNote, PlayerNote, PlayerHistory, Statistics, InventoryItem, InventoryItemInfo, InventoryChangeLog } from "@/types"
 
 interface ShowUIData {
   isAdmin: boolean
@@ -144,6 +144,37 @@ export function useNuiListener() {
           store.setStatistics(data as Statistics)
           break
         }
+
+        // Inventory Events
+        case "SET_PLAYER_INVENTORY": {
+          const invData = data as {
+            reportId: number
+            items: InventoryItem[]
+            itemList: Record<string, InventoryItemInfo>
+            systemName: string
+            supportsMetadata: boolean
+          }
+          store.setInventory(invData.reportId, {
+            items: invData.items,
+            itemList: invData.itemList,
+            systemName: invData.systemName,
+            supportsMetadata: invData.supportsMetadata,
+            loading: false
+          })
+          break
+        }
+
+        case "INVENTORY_UPDATED": {
+          const invData = data as { reportId: number; items: InventoryItem[] }
+          store.setInventoryItems(invData.reportId, invData.items)
+          break
+        }
+
+        case "SET_INVENTORY_ACTION_LOG": {
+          const logData = data as { reportId: number; logs: InventoryChangeLog[] }
+          store.setInventoryActionLog(logData.reportId, logData.logs)
+          break
+        }
       }
     })
 
@@ -236,6 +267,31 @@ export function useNuiActions() {
     fetchNui("takeScreenshot", { reportId })
   }, [])
 
+  // Inventory Actions
+  const getPlayerInventory = useCallback((reportId: number) => {
+    fetchNui("getPlayerInventory", { reportId })
+  }, [])
+
+  const addInventoryItem = useCallback((reportId: number, itemName: string, count: number, metadata?: Record<string, unknown>) => {
+    fetchNui("addInventoryItem", { reportId, itemName, count, metadata })
+  }, [])
+
+  const removeInventoryItem = useCallback((reportId: number, itemName: string, count: number, slot?: number) => {
+    fetchNui("removeInventoryItem", { reportId, itemName, count, slot })
+  }, [])
+
+  const setInventoryItemCount = useCallback((reportId: number, itemName: string, count: number) => {
+    fetchNui("setInventoryItemCount", { reportId, itemName, count })
+  }, [])
+
+  const setInventoryItemMetadata = useCallback((reportId: number, slot: number, metadata: Record<string, unknown>) => {
+    fetchNui("setInventoryItemMetadata", { reportId, slot, metadata })
+  }, [])
+
+  const getInventoryActionLog = useCallback((reportId: number, limit?: number) => {
+    fetchNui("getInventoryActionLog", { reportId, limit })
+  }, [])
+
   return {
     close,
     createReport,
@@ -257,6 +313,12 @@ export function useNuiActions() {
     getPlayerHistory,
     getMyReports,
     getStatistics,
-    takeScreenshot
+    takeScreenshot,
+    getPlayerInventory,
+    addInventoryItem,
+    removeInventoryItem,
+    setInventoryItemCount,
+    setInventoryItemMetadata,
+    getInventoryActionLog
   }
 }

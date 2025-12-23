@@ -227,5 +227,73 @@ return {
     ["identifier_discord"] = "Discord",
     ["identifier_fivem"] = "FiveM",
     ["copied"] = "Kopiert!",
-    ["copy_hint"] = "Strg+C zum Kopieren"
+    ["copy_hint"] = "Strg+C zum Kopieren",
+
+    -- Inventory Management
+    ["inventory"] = "Inventar",
+    ["inventory_management"] = "Inventarverwaltung",
+    ["inventory_items"] = "Gegenstände",
+    ["inventory_empty"] = "Spielerinventar ist leer",
+    ["inventory_loading"] = "Inventar wird geladen...",
+    ["inventory_unavailable"] = "Inventarsystem nicht verfügbar",
+    ["inventory_player_offline"] = "Inventar kann nicht angezeigt werden - Spieler ist offline",
+    ["inventory_system"] = "Inventarsystem",
+    ["inventory_refresh"] = "Aktualisieren",
+
+    -- Inventory Item Actions
+    ["item_add"] = "Item hinzufügen",
+    ["item_remove"] = "Item entfernen",
+    ["item_set_count"] = "Anzahl setzen",
+    ["item_edit_metadata"] = "Metadata bearbeiten",
+    ["item_name"] = "Item-Name",
+    ["item_label"] = "Bezeichnung",
+    ["item_count"] = "Anzahl",
+    ["item_slot"] = "Slot",
+    ["item_weight"] = "Gewicht",
+    ["item_metadata"] = "Metadata",
+    ["item_durability"] = "Haltbarkeit",
+    ["item_serial"] = "Seriennummer",
+    ["item_select"] = "Item auswählen",
+    ["item_search"] = "Items suchen...",
+
+    -- Inventory Action Results
+    ["inventory_item_added"] = "%dx %s zum Spielerinventar hinzugefügt",
+    ["inventory_item_removed"] = "%dx %s aus Spielerinventar entfernt",
+    ["inventory_item_set"] = "%s Anzahl auf %d gesetzt",
+    ["inventory_metadata_updated"] = "Metadata für %s aktualisiert",
+    ["inventory_action_failed"] = "Inventaraktion fehlgeschlagen: %s",
+    ["inventory_action_success"] = "Inventaraktion abgeschlossen",
+
+    -- Inventory Action Log
+    ["inventory_action_log"] = "Aktionsprotokoll",
+    ["inventory_recent_actions"] = "Letzte Aktionen",
+    ["inventory_no_actions"] = "Keine Aktionen vorhanden",
+
+    -- Inventory Errors
+    ["error_inventory_disabled"] = "Inventarverwaltung ist deaktiviert",
+    ["error_invalid_item"] = "Ungültiger Item-Name",
+    ["error_invalid_count"] = "Ungültige Anzahl",
+    ["error_invalid_slot"] = "Ungültige Slotnummer",
+    ["error_item_not_found"] = "Item nicht im Inventar gefunden",
+    ["error_insufficient_items"] = "Spieler hat nicht genug Items",
+    ["error_inventory_full"] = "Spielerinventar ist voll",
+    ["error_metadata_not_supported"] = "Metadata-Bearbeitung wird von diesem Inventarsystem nicht unterstützt",
+    ["error_max_item_count"] = "Maximal %d Items auf einmal möglich",
+
+    -- Inventory Confirmation
+    ["confirm_add_item"] = "%dx %s zu %s's Inventar hinzufügen?",
+    ["confirm_remove_item"] = "%dx %s aus %s's Inventar entfernen?",
+    ["confirm_set_item"] = "%s's %s Anzahl auf %d setzen?",
+
+    -- Inventory System Messages
+    ["action_add_item"] = "%s hat %dx %s zum Spielerinventar hinzugefügt",
+    ["action_remove_item"] = "%s hat %dx %s aus dem Spielerinventar entfernt",
+    ["action_set_item"] = "%s hat %s Anzahl des Spielers auf %d gesetzt",
+    ["action_edit_metadata"] = "%s hat Metadata für %s bearbeitet",
+
+    -- Inventory Discord
+    ["discord_inventory_action"] = "Inventaraktion",
+    ["discord_action_type"] = "Aktion",
+    ["discord_item_details"] = "Item-Details",
+    ["discord_count_change"] = "Anzahländerung"
 }

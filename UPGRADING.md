@@ -13,7 +13,9 @@
 |---------------------|----------|
 | v1.0.2 or older | `migration_1.0.3_image_url.sql` + `migration_1.0.4_player_identifiers.sql` |
 | v1.0.3 | `migration_1.0.4_player_identifiers.sql` |
-| v1.0.4+ | Nothing - you're up to date! |
+| v1.0.4 | Nothing new |
+| v1.0.5 | `migration_1.0.6_inventory_changes.sql` (optional) |
+| v1.0.6+ | Nothing - you're up to date! |
 
 ---
 
@@ -55,3 +57,15 @@ You already ran this migration. Skip it.
 
 **Something else broke?**
 Restore your backup and try again, or open an issue on GitHub.
+
+---
+
+## v1.0.5 → v1.0.6 (Inventory Management)
+
+This migration is **optional**. Only run it if you want to use inventory management.
+
+```bash
+mysql -u root -p your_database < sql/migration_1.0.6_inventory_changes.sql
+```
+
+See [INVENTORY.md](INVENTORY.md) for setup and usage details.
