@@ -29,18 +29,6 @@ function ItemActionModal({ isOpen, onClose, reportId, item, action, itemList }: 
   const [metadata, setMetadata] = useState(item?.metadata ? JSON.stringify(item.metadata, null, 2) : "{}")
   const [searchTerm, setSearchTerm] = useState("")
 
-  useEffect(() => {
-    if (item) {
-      setSelectedItem(item.name)
-      setCount(item.count)
-      setMetadata(item.metadata ? JSON.stringify(item.metadata, null, 2) : "{}")
-    } else {
-      setSelectedItem("")
-      setCount(1)
-      setMetadata("{}")
-    }
-  }, [item, isOpen])
-
   if (!isOpen) return null
 
   const filteredItems = Object.entries(itemList).filter(([name, info]) =>
@@ -418,14 +406,17 @@ export function InventoryPanel({ reportId, isPlayerOnline }: InventoryPanelProps
       </div>
 
       {/* Modal */}
-      <ItemActionModal
-        isOpen={modalState.isOpen}
-        onClose={closeModal}
-        reportId={reportId}
-        item={modalState.item}
-        action={modalState.action}
-        itemList={inventory?.itemList || {}}
-      />
+      {modalState.isOpen && (
+        <ItemActionModal
+          key={`${modalState.action}-${modalState.item?.name || "new"}-${modalState.item?.slot || 0}`}
+          isOpen={modalState.isOpen}
+          onClose={closeModal}
+          reportId={reportId}
+          item={modalState.item}
+          action={modalState.action}
+          itemList={inventory?.itemList || {}}
+        />
+      )}
     </div>
   )
 }
