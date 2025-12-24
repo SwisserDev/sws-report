@@ -91,6 +91,10 @@ mysql -u root -p your_database < resources/sws-report/sql/migrate_voice_messages
 
 # 6. (Optional) Enable inventory management
 mysql -u root -p your_database < resources/sws-report/sql/migration_1.0.6_inventory_changes.sql
+
+# 7. (Optional) Enable sound notifications
+# Place notification.ogg and message.ogg in web/public/sounds/
+# Then rebuild: cd web && npm run build
 ```
 
 > **Upgrading from an older version?** See [UPGRADING.md](UPGRADING.md)
@@ -132,6 +136,14 @@ Config.Inventory = {
     enabled = true,
     allowedActions = { add = true, remove = true, set = true, metadata_edit = true },
     maxItemCount = 1000
+}
+
+-- Sound Notifications (optional)
+Config.Sounds = {
+    enabled = true,
+    newReport = "notification.ogg",
+    newMessage = "message.ogg",
+    volume = 0.5
 }
 ```
 
