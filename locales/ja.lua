@@ -95,6 +95,7 @@ return {
     ["screenshot_upload_failed"] = "Discord へのスクリーンショットアップロードに失敗しました",
     ["screenshot_failed"] = "スクリーンショット撮影に失敗しました",
     ["screenshot_uploaded"] = "スクリーンショットをアップロードしました",
+    ["screenshot_cooldown"] = "次のスクリーンショットを撮るまでお待ちください",
     ["take_screenshot"] = "スクリーンショットを撮影",
     ["player_offline"] = "プレイヤーはオフラインです",
 

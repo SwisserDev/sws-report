@@ -95,6 +95,7 @@ return {
     ["screenshot_upload_failed"] = "Failed to upload screenshot to Discord",
     ["screenshot_failed"] = "Screenshot capture failed",
     ["screenshot_uploaded"] = "Screenshot uploaded",
+    ["screenshot_cooldown"] = "Please wait before taking another screenshot",
     ["take_screenshot"] = "Take Screenshot",
     ["player_offline"] = "Player is offline",
 

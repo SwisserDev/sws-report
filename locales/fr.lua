@@ -95,6 +95,7 @@ return {
     ["screenshot_upload_failed"] = "Échec de l’envoi de la capture sur Discord",
     ["screenshot_failed"] = "Échec de la capture d’écran",
     ["screenshot_uploaded"] = "Capture envoyée",
+    ["screenshot_cooldown"] = "Veuillez patienter avant de prendre une autre capture",
     ["take_screenshot"] = "Prendre une capture",
     ["player_offline"] = "Le joueur est hors ligne",
 

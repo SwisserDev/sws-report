@@ -95,6 +95,7 @@ return {
     ["screenshot_upload_failed"] = "Fehler beim Hochladen des Screenshots zu Discord",
     ["screenshot_failed"] = "Screenshot konnte nicht erstellt werden",
     ["screenshot_uploaded"] = "Screenshot hochgeladen",
+    ["screenshot_cooldown"] = "Bitte warte bevor du einen weiteren Screenshot machst",
     ["take_screenshot"] = "Screenshot aufnehmen",
     ["player_offline"] = "Spieler ist offline",
 
