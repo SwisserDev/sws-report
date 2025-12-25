@@ -223,11 +223,11 @@ function ESXInventoryAdapter.GetItemList()
     local result = {}
 
     if items then
-        for _, item in pairs(items) do
-            result[item.name] = {
-                name = item.name,
-                label = item.label,
-                weight = item.weight or 0
+        for item, data in pairs(items) do
+            result[item] = {
+                name = item,
+                label = data.label,
+                weight = data.weight or 0
             }
         end
     end
