@@ -108,14 +108,29 @@ RegisterNetEvent("sws-report:getMessages", function(reportId)
 
     if not player then return end
 
+    local isAdmin = IsPlayerAdmin(source)
+
+    -- Check cache first (for active reports)
     local report = Reports[reportId]
-    if not report then
-        NotifyPlayer(source, L("error_not_found"), "error")
-        return
+    local reportOwnerId = nil
+
+    if report then
+        reportOwnerId = report:getPlayerId()
+    else
+        -- Report not in cache - check database for resolved reports
+        local dbReport = MySQL.query.await([[
+            SELECT player_id FROM reports WHERE id = ?
+        ]], { reportId })
+
+        if not dbReport or #dbReport == 0 then
+            NotifyPlayer(source, L("error_not_found"), "error")
+            return
+        end
+
+        reportOwnerId = dbReport[1].player_id
     end
 
-    local isAdmin = IsPlayerAdmin(source)
-    local isOwner = report:getPlayerId() == player.identifier
+    local isOwner = reportOwnerId == player.identifier
 
     if not isAdmin and not isOwner then
         NotifyPlayer(source, L("error_no_permission"), "error")
