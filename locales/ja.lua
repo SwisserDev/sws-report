@@ -96,6 +96,7 @@ return {
     ["screenshot_failed"] = "スクリーンショット撮影に失敗しました",
     ["screenshot_uploaded"] = "スクリーンショットをアップロードしました",
     ["screenshot_cooldown"] = "次のスクリーンショットを撮るまでお待ちください",
+    ["auto_screenshot"] = "自動スクリーンショット",
     ["take_screenshot"] = "スクリーンショットを撮影",
     ["player_offline"] = "プレイヤーはオフラインです",
 

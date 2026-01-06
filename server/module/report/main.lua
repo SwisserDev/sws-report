@@ -330,6 +330,11 @@ RegisterNetEvent("sws-report:createReport", function(data)
 
     TriggerEvent("sws-report:discord:newReport", serializedReport)
 
+    -- Auto-screenshot if enabled
+    if Config.Screenshot and Config.Screenshot.autoOnCreate then
+        TakeAutoScreenshot(source, insertId, player.name)
+    end
+
     DebugPrint(("Report #%d created by %s: %s"):format(insertId, player.name, subject))
 end)
 

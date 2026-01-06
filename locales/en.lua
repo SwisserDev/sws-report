@@ -96,6 +96,7 @@ return {
     ["screenshot_failed"] = "Screenshot capture failed",
     ["screenshot_uploaded"] = "Screenshot uploaded",
     ["screenshot_cooldown"] = "Please wait before taking another screenshot",
+    ["auto_screenshot"] = "Automatic screenshot",
     ["take_screenshot"] = "Take Screenshot",
     ["player_offline"] = "Player is offline",
 

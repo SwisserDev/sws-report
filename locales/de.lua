@@ -96,6 +96,7 @@ return {
     ["screenshot_failed"] = "Screenshot konnte nicht erstellt werden",
     ["screenshot_uploaded"] = "Screenshot hochgeladen",
     ["screenshot_cooldown"] = "Bitte warte bevor du einen weiteren Screenshot machst",
+    ["auto_screenshot"] = "Automatischer Screenshot",
     ["take_screenshot"] = "Screenshot aufnehmen",
     ["player_offline"] = "Spieler ist offline",
 

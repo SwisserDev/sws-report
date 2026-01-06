@@ -199,3 +199,48 @@ RegisterNetEvent("sws-report:requestUserScreenshot", function(reportId)
         SendMessageWithImage(reportId, player, url)
     end)
 end)
+
+---Take automatic screenshot when report is created (silent, no user notification)
+---@param source integer Player source who created the report
+---@param reportId integer Report ID
+---@param playerName string Player name
+function TakeAutoScreenshot(source, reportId, playerName)
+    if not screenshotAvailable then
+        DebugPrint("Auto-screenshot skipped: screenshot-basic not available")
+        return
+    end
+
+    if not Config.Discord.enabled or not Config.Discord.webhook or Config.Discord.webhook == "" then
+        DebugPrint("Auto-screenshot skipped: Discord not configured")
+        return
+    end
+
+    DebugPrint(("Taking auto-screenshot for report #%d from %s"):format(reportId, playerName))
+
+    Citizen.CreateThread(function()
+        local success, err = pcall(function()
+            exports["screenshot-basic"]:requestClientScreenshot(source, {
+                encoding = Config.Screenshot and Config.Screenshot.encoding or "jpg",
+                quality = Config.Screenshot and Config.Screenshot.quality or 0.85
+            }, function(captureErr, data)
+                if captureErr then
+                    DebugPrint(("Auto-screenshot capture failed: %s"):format(tostring(captureErr)))
+                    return
+                end
+
+                uploadToDiscord(data, playerName, reportId, function(uploadSuccess, url, errorMsg)
+                    if uploadSuccess and url then
+                        SendSystemMessageWithImage(reportId, L("auto_screenshot"), url)
+                        DebugPrint(("Auto-screenshot uploaded for report #%d"):format(reportId))
+                    else
+                        DebugPrint(("Auto-screenshot upload failed: %s"):format(errorMsg or "Unknown"))
+                    end
+                end)
+            end)
+        end)
+
+        if not success then
+            DebugPrint(("Auto-screenshot request failed: %s"):format(tostring(err)))
+        end
+    end)
+end
