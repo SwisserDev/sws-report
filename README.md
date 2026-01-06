@@ -4,7 +4,7 @@
 
 [![Build](https://github.com/SwisserDev/sws-report/actions/workflows/build.yml/badge.svg)](https://github.com/SwisserDev/sws-report/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.7-green.svg)](https://github.com/SwisserDev/sws-report/releases)
+[![Version](https://img.shields.io/badge/version-1.0.8-green.svg)](https://github.com/SwisserDev/sws-report/releases)
 [![Lua](https://img.shields.io/badge/Lua-5.4-2C2D72?logo=lua&logoColor=white)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](#)
 [![FiveM](https://img.shields.io/badge/FiveM-Ready-F40552)](#)
@@ -53,7 +53,7 @@ Standalone report system for FiveM with live chat, admin tools, and Discord inte
 - **Player Reports** - Create tickets with live chat support
 - **Voice Messages** - Record and send audio messages in chat (optional)
 - **Admin Panel** - Claim, resolve, and manage reports
-- **Moderation Tools** - Teleport, heal, freeze, spectate, kick
+- **Moderation Tools** - Teleport, heal, freeze, spectate, kick, screenshot
 - **Discord Integration** - Webhook logging for all events
 - **Statistics Dashboard** - Track team performance
 - **Inventory Management** - View/modify player items (ox_inventory, ESX)
@@ -144,6 +144,13 @@ Config.Sounds = {
     newReport = "notification.ogg",
     newMessage = "message.ogg",
     volume = 0.5
+}
+
+-- Screenshot Settings (optional, requires screenshot-basic)
+Config.Screenshot = {
+    encoding = "jpg",           -- 'png' | 'jpg' | 'webp'
+    quality = 0.85,             -- 0.0-1.0 (jpg/webp only)
+    autoOnCreate = false        -- Auto-screenshot when player creates report
 }
 ```
 
