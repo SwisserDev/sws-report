@@ -208,6 +208,16 @@ RegisterNetEvent("sws-report:playerJoined", function()
         return
     end
 
+    -- Wait for ACE permissions to be fully loaded
+    -- This fixes the race condition where IsPlayerAceAllowed returns false
+    -- because the player's permissions haven't synced yet
+    Citizen.Wait(1000)
+
+    -- Verify player is still connected after delay
+    if not GetPlayerName(source) then
+        return
+    end
+
     Players[source] = {
         source = source,
         identifier = identifier,
