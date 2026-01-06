@@ -573,10 +573,7 @@ RegisterKeyMapping(Config.Command, "Open Report Menu", "keyboard", "")
 
 -- Player loaded
 CreateThread(function()
-    while true do
-        if NetworkIsPlayerActive(PlayerId()) then
-            break
-        end
+    while not NetworkIsPlayerActive(PlayerId()) do
         Wait(500)
     end
 

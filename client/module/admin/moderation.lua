@@ -24,12 +24,18 @@ end)
 
 ---Prevent movement when frozen
 CreateThread(function()
+    local sleep = 1000
+
     while true do
+        sleep = 1000
+
         if isFrozen then
+            sleep = 0
             DisableAllControlActions(0)
             EnableControlAction(0, 249, true) -- Push to talk
             EnableControlAction(0, 46, true)  -- Push to talk secondary
         end
-        Wait(0)
+
+        Wait(sleep)
     end
 end)
