@@ -83,7 +83,7 @@ function GetActiveReports()
     end
 
     table.sort(reports, function(a, b)
-        return a.createdAt > b.createdAt
+        return tostring(a.createdAt or "") > tostring(b.createdAt or "")
     end)
 
     return reports
@@ -136,7 +136,7 @@ function GetPlayerReports(identifier, includeResolved)
     end
 
     table.sort(reports, function(a, b)
-        return a.createdAt > b.createdAt
+        return tostring(a.createdAt or "") > tostring(b.createdAt or "")
     end)
 
     return reports
