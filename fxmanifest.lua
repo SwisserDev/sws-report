@@ -27,6 +27,9 @@ server_scripts {
     "server/module/inventory/adapter.lua",
     "server/module/inventory/discord.lua",
     "server/module/inventory/main.lua",
+    -- Load JS exports BEFORE Lua modules that need them
+    "server/module/admin/discord-screenshot.js",
+    "server/module/voice/discord-upload.js",
     -- Other modules
     "server/module/admin/*.lua",
     "server/module/chat/*.lua",
@@ -35,9 +38,7 @@ server_scripts {
     "server/module/notes/*.lua",
     "server/module/report/*.lua",
     "server/module/statistics/*.lua",
-    "server/module/voice/*.lua",
-    "server/module/admin/discord-screenshot.js",
-    "server/module/voice/discord-upload.js"
+    "server/module/voice/*.lua"
 }
 
 ui_page "web/out/index.html"
