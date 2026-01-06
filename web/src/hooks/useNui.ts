@@ -179,7 +179,8 @@ export function useNuiListener() {
     })
 
     return () => unsubscribe()
-  }, [store])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 }
 
 export function useNuiActions() {
