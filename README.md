@@ -67,6 +67,7 @@ Standalone report system for FiveM with live chat, admin tools, and Discord inte
 - FiveM Server
 - [oxmysql](https://github.com/overextended/oxmysql)
 - Node.js 20+
+- [screenshot-basic](https://github.com/citizenfx/screenshot-basic) or [screencapture](https://github.com/itschip/screencapture) (optional, for screenshot features)
 
 ---
 
@@ -146,11 +147,12 @@ Config.Sounds = {
     volume = 0.5
 }
 
--- Screenshot Settings (optional, requires screenshot-basic)
+-- Screenshot Settings (optional, requires screenshot-basic or screencapture)
 Config.Screenshot = {
-    encoding = "jpg",           -- 'png' | 'jpg' | 'webp'
-    quality = 0.85,             -- 0.0-1.0 (jpg/webp only)
-    autoOnCreate = false        -- Auto-screenshot when player creates report
+    provider = "screenshot-basic",  -- "screenshot-basic" or "screencapture"
+    encoding = "jpg",               -- "jpg" | "png" | "webp" (webp only with screencapture)
+    quality = 0.85,                 -- 0.0-1.0 (screenshot-basic only)
+    autoOnCreate = false            -- Auto-screenshot when player creates report
 }
 ```
 
