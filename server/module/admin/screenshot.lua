@@ -1,5 +1,8 @@
----@type boolean Whether screenshot-basic is available
-local screenshotAvailable = GetResourceState("screenshot-basic") == "started"
+---@type "screenshot-basic" | "screencapture" Configured screenshot provider
+local screenshotProvider = Config.Screenshot and Config.Screenshot.provider or "screenshot-basic"
+
+---@type boolean Whether the configured screenshot resource is available
+local screenshotAvailable = GetResourceState(screenshotProvider) == "started"
 
 ---@type table<integer, number> Screenshot cooldowns per target source
 local screenshotCooldowns = {}
@@ -47,6 +50,38 @@ local function setScreenshotCooldown(targetSource)
     screenshotCooldowns[targetSource] = GetGameTimer() + SCREENSHOT_COOLDOWN
 end
 
+---Capture screenshot using the configured provider, then call onCapture with base64 data
+---@param targetSource integer Target player source
+---@param onCapture function Callback(data) with base64 image data
+---@param onError function Callback(errorMsg)
+local function captureScreenshot(targetSource, onCapture, onError)
+    local encoding = Config.Screenshot and Config.Screenshot.encoding or "jpg"
+
+    if screenshotProvider == "screencapture" then
+        exports["screencapture"]:serverCapture(targetSource, {
+            encoding = encoding
+        }, function(data)
+            if not data then
+                onError("screencapture returned no data")
+                return
+            end
+            onCapture(data)
+        end, "base64")
+    else
+        local quality = Config.Screenshot and Config.Screenshot.quality or 0.85
+        exports["screenshot-basic"]:requestClientScreenshot(targetSource, {
+            encoding = encoding,
+            quality = quality
+        }, function(captureErr, data)
+            if captureErr then
+                onError(tostring(captureErr))
+                return
+            end
+            onCapture(data)
+        end)
+    end
+end
+
 ---Execute screenshot request in separate thread to prevent blocking server loop
 ---@param targetSource integer Target player source
 ---@param notifySource integer Source to notify on success/error
@@ -56,16 +91,7 @@ end
 local function executeScreenshotRequest(targetSource, notifySource, reportId, playerName, onSuccess)
     Citizen.CreateThread(function()
         local success, err = pcall(function()
-            exports["screenshot-basic"]:requestClientScreenshot(targetSource, {
-                encoding = Config.Screenshot and Config.Screenshot.encoding or "jpg",
-                quality = Config.Screenshot and Config.Screenshot.quality or 0.85
-            }, function(captureErr, data)
-                if captureErr then
-                    DebugPrint(("Screenshot capture failed: %s"):format(tostring(captureErr)))
-                    NotifyPlayer(notifySource, L("screenshot_failed"), "error")
-                    return
-                end
-
+            captureScreenshot(targetSource, function(data)
                 DebugPrint(("Screenshot captured, data length: %d"):format(data and #data or 0))
 
                 uploadToDiscord(data, playerName, reportId, function(uploadSuccess, url, errorMsg)
@@ -78,6 +104,9 @@ local function executeScreenshotRequest(targetSource, notifySource, reportId, pl
                         PrintError(("Screenshot upload failed: %s"):format(errorMsg or "Unknown error"))
                     end
                 end)
+            end, function(errorMsg)
+                DebugPrint(("Screenshot capture failed: %s"):format(errorMsg))
+                NotifyPlayer(notifySource, L("screenshot_failed"), "error")
             end)
         end)
 
@@ -206,7 +235,7 @@ end)
 ---@param playerName string Player name
 function TakeAutoScreenshot(source, reportId, playerName)
     if not screenshotAvailable then
-        DebugPrint("Auto-screenshot skipped: screenshot-basic not available")
+        DebugPrint(("Auto-screenshot skipped: %s not available"):format(screenshotProvider))
         return
     end
 
@@ -219,15 +248,7 @@ function TakeAutoScreenshot(source, reportId, playerName)
 
     Citizen.CreateThread(function()
         local success, err = pcall(function()
-            exports["screenshot-basic"]:requestClientScreenshot(source, {
-                encoding = Config.Screenshot and Config.Screenshot.encoding or "jpg",
-                quality = Config.Screenshot and Config.Screenshot.quality or 0.85
-            }, function(captureErr, data)
-                if captureErr then
-                    DebugPrint(("Auto-screenshot capture failed: %s"):format(tostring(captureErr)))
-                    return
-                end
-
+            captureScreenshot(source, function(data)
                 uploadToDiscord(data, playerName, reportId, function(uploadSuccess, url, errorMsg)
                     if uploadSuccess and url then
                         SendSystemMessageWithImage(reportId, L("auto_screenshot"), url)
@@ -236,6 +257,8 @@ function TakeAutoScreenshot(source, reportId, playerName)
                         DebugPrint(("Auto-screenshot upload failed: %s"):format(errorMsg or "Unknown"))
                     end
                 end)
+            end, function(errorMsg)
+                DebugPrint(("Auto-screenshot capture failed: %s"):format(errorMsg))
             end)
         end)
 

@@ -40,6 +40,12 @@
 ---@field events DiscordEvents Event toggles
 ---@field colors DiscordColors Embed colors
 
+---@class ScreenshotConfig
+---@field provider "screenshot-basic" | "screencapture" Screenshot resource to use
+---@field encoding string Image encoding format
+---@field quality number Image quality 0.0-1.0 (screenshot-basic only)
+---@field autoOnCreate boolean Auto-screenshot on report creation
+
 ---@class UIConfig
 ---@field defaultTheme "dark" | "light" Default theme
 ---@field position string UI position
@@ -61,6 +67,7 @@
 ---@field AdminIdentifiers string[] Admin identifiers (steam/license)
 ---@field Sounds SoundConfig Sound configuration
 ---@field Discord DiscordConfig Discord webhook configuration
+---@field Screenshot ScreenshotConfig Screenshot configuration
 ---@field UI UIConfig UI configuration
 ---@field VoiceMessages VoiceMessageConfig Voice message configuration
 
@@ -163,6 +170,14 @@ Config.Discord = {
         admin = 16753920,       -- Orange
         inventory = 10181046    -- Purple (Inventory actions)
     }
+}
+
+-- Screenshot Settings
+Config.Screenshot = {
+    provider = "screenshot-basic",  -- "screenshot-basic" or "screencapture"
+    encoding = "jpg",               -- "jpg", "png", or "webp" (webp only with screencapture)
+    quality = 0.85,                 -- 0.0 - 1.0 (screenshot-basic only)
+    autoOnCreate = false            -- Auto-screenshot when player creates a report
 }
 
 -- UI Settings
