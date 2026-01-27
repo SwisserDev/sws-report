@@ -3,7 +3,7 @@
 RegisterNetEvent("sws-report:getStatistics", function()
     local source = source
 
-    if not IsPlayerAdmin(source) then
+    if not HasPermission(source, Permission.VIEW_STATISTICS) then
         return
     end
 

@@ -116,7 +116,7 @@ RegisterNetEvent("sws-report:getPlayerHistory", function(playerId)
         return
     end
 
-    if not IsPlayerAdmin(source) then
+    if not HasPermission(source, Permission.VIEW_PLAYER_HISTORY) then
         NotifyPlayer(source, L("error_no_permission"), "error")
         return
     end

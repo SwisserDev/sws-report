@@ -4,7 +4,7 @@ lua54 "yes"
 
 author "SwisserDev"
 description "Standalone Report System for FiveM"
-version "1.1.0"
+version "1.1.1"
 
 shared_scripts {
     "config/main.lua",

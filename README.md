@@ -4,7 +4,7 @@
 
 [![Build](https://github.com/SwisserDev/sws-report/actions/workflows/build.yml/badge.svg)](https://github.com/SwisserDev/sws-report/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](https://github.com/SwisserDev/sws-report/releases)
+[![Version](https://img.shields.io/badge/version-1.1.1-green.svg)](https://github.com/SwisserDev/sws-report/releases)
 [![Lua](https://img.shields.io/badge/Lua-5.4-2C2D72?logo=lua&logoColor=white)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](#)
 [![FiveM](https://img.shields.io/badge/FiveM-Ready-F40552)](#)
