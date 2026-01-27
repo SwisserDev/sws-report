@@ -76,7 +76,7 @@ RegisterNetEvent("sws-report:addReportNote", function(reportId, note)
         return
     end
 
-    if not IsPlayerAdmin(source) then
+    if not HasPermission(source, Permission.MANAGE_NOTES) then
         NotifyPlayer(source, L("error_no_permission"), "error")
         return
     end
@@ -137,7 +137,7 @@ RegisterNetEvent("sws-report:deleteReportNote", function(noteId)
         return
     end
 
-    if not IsPlayerAdmin(source) then
+    if not HasPermission(source, Permission.MANAGE_NOTES) then
         NotifyPlayer(source, L("error_no_permission"), "error")
         return
     end
@@ -169,7 +169,7 @@ RegisterNetEvent("sws-report:getReportNotes", function(reportId)
         return
     end
 
-    if not IsPlayerAdmin(source) then
+    if not HasPermission(source, Permission.VIEW_NOTES) then
         return
     end
 
@@ -185,7 +185,7 @@ RegisterNetEvent("sws-report:addPlayerNote", function(playerId, note)
         return
     end
 
-    if not IsPlayerAdmin(source) then
+    if not HasPermission(source, Permission.MANAGE_NOTES) then
         NotifyPlayer(source, L("error_no_permission"), "error")
         return
     end
@@ -240,7 +240,7 @@ RegisterNetEvent("sws-report:deletePlayerNote", function(noteId)
         return
     end
 
-    if not IsPlayerAdmin(source) then
+    if not HasPermission(source, Permission.MANAGE_NOTES) then
         NotifyPlayer(source, L("error_no_permission"), "error")
         return
     end
@@ -272,7 +272,7 @@ RegisterNetEvent("sws-report:getPlayerNotes", function(playerId)
         return
     end
 
-    if not IsPlayerAdmin(source) then
+    if not HasPermission(source, Permission.VIEW_NOTES) then
         return
     end
 

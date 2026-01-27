@@ -94,6 +94,9 @@ interface ReportState {
   addNotification: (notification: Omit<Notification, "id">) => void
   removeNotification: (id: string) => void
 
+  // Permissions
+  hasPermission: (permission: string) => boolean
+
   // Getters
   getSelectedReport: () => Report | undefined
   getFilteredReports: () => Report[]
@@ -352,6 +355,18 @@ export const useReportStore = create<ReportState>((set, get) => ({
 
   getInventory: (reportId) => {
     return get().inventory[reportId]
+  },
+
+  // Permissions
+  hasPermission: (permission) => {
+    const state = get()
+    const { playerData } = state
+    if (!playerData) return false
+    if (playerData.permissions) {
+      return playerData.permissions[permission] === true
+    }
+    // Fallback: no permissions object means legacy admin with full access
+    return playerData.isAdmin
   },
 
   // Getters

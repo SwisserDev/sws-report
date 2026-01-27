@@ -88,7 +88,7 @@ export function PlayerInfoPanel({ playerId, playerName, onClose }: PlayerInfoPan
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedIdentifier, setSelectedIdentifier] = useState<{ value: string; label: string } | null>(null)
 
-  const { playerHistory, locale, categories } = useReportStore()
+  const { playerHistory, locale, categories, hasPermission } = useReportStore()
   const { getPlayerHistory, addPlayerNote, deletePlayerNote } = useNuiActions()
 
   useEffect(() => {
@@ -320,15 +320,17 @@ export function PlayerInfoPanel({ playerId, playerName, onClose }: PlayerInfoPan
                         <span className="text-xs font-medium text-accent">{note.adminName}</span>
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] xl:text-xs text-text-tertiary">{formatRelativeTime(note.createdAt)}</span>
-                          <button
-                            onClick={() => handleDeleteNote(note.id)}
-                            className="opacity-0 group-hover:opacity-100 text-text-tertiary hover:text-red-400 transition-all"
-                            title={locale.delete || "Delete"}
-                          >
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
+                          {hasPermission("manage_notes") && (
+                            <button
+                              onClick={() => handleDeleteNote(note.id)}
+                              className="opacity-0 group-hover:opacity-100 text-text-tertiary hover:text-red-400 transition-all"
+                              title={locale.delete || "Delete"}
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          )}
                         </div>
                       </div>
                       <p className="text-sm text-text-secondary whitespace-pre-wrap">{note.note}</p>
@@ -337,28 +339,30 @@ export function PlayerInfoPanel({ playerId, playerName, onClose }: PlayerInfoPan
                 )}
               </div>
 
-              <form onSubmit={handleAddNote} className="p-4 border-t border-border">
-                <div className="flex gap-2">
-                  <textarea
-                    value={newNote}
-                    onChange={(e) => setNewNote(e.target.value)}
-                    placeholder={locale.add_player_note_placeholder || "Add a note about this player..."}
-                    className="flex-1 px-3 py-2 text-sm bg-bg-tertiary border border-border rounded-lg resize-none focus:outline-none focus:border-accent text-text-primary placeholder:text-text-tertiary"
-                    rows={2}
-                    maxLength={1000}
-                  />
-                  <Button
-                    type="submit"
-                    size="sm"
-                    variant="primary"
-                    disabled={!newNote.trim() || isSubmitting}
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                  </Button>
-                </div>
-              </form>
+              {hasPermission("manage_notes") && (
+                <form onSubmit={handleAddNote} className="p-4 border-t border-border">
+                  <div className="flex gap-2">
+                    <textarea
+                      value={newNote}
+                      onChange={(e) => setNewNote(e.target.value)}
+                      placeholder={locale.add_player_note_placeholder || "Add a note about this player..."}
+                      className="flex-1 px-3 py-2 text-sm bg-bg-tertiary border border-border rounded-lg resize-none focus:outline-none focus:border-accent text-text-primary placeholder:text-text-tertiary"
+                      rows={2}
+                      maxLength={1000}
+                    />
+                    <Button
+                      type="submit"
+                      size="sm"
+                      variant="primary"
+                      disabled={!newNote.trim() || isSubmitting}
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </Button>
+                  </div>
+                </form>
+              )}
             </div>
           )}
         </div>

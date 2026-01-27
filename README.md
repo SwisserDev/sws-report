@@ -4,7 +4,7 @@
 
 [![Build](https://github.com/SwisserDev/sws-report/actions/workflows/build.yml/badge.svg)](https://github.com/SwisserDev/sws-report/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.8-green.svg)](https://github.com/SwisserDev/sws-report/releases)
+[![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](https://github.com/SwisserDev/sws-report/releases)
 [![Lua](https://img.shields.io/badge/Lua-5.4-2C2D72?logo=lua&logoColor=white)](#)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](#)
 [![FiveM](https://img.shields.io/badge/FiveM-Ready-F40552)](#)
@@ -53,6 +53,7 @@ Standalone report system for FiveM with live chat, admin tools, and Discord inte
 - **Player Reports** - Create tickets with live chat support
 - **Voice Messages** - Record and send audio messages in chat (optional)
 - **Admin Panel** - Claim, resolve, and manage reports
+- **Permission Groups (RBAC)** - Granular permissions with inheritance (optional)
 - **Moderation Tools** - Teleport, heal, freeze, spectate, kick, screenshot
 - **Discord Integration** - Webhook logging for all events
 - **Statistics Dashboard** - Track team performance
@@ -154,6 +155,42 @@ Config.Screenshot = {
     quality = 0.85,                 -- 0.0-1.0 (screenshot-basic only)
     autoOnCreate = false            -- Auto-screenshot when player creates report
 }
+
+-- Permission Groups (optional, omit for legacy full-access behavior)
+Config.Permissions = {
+    groups = {
+        moderator = {
+            label = "Moderator",
+            permissions = {
+                "view_reports", "claim_report", "resolve_report", "set_priority",
+                "send_admin_message", "view_notes", "manage_notes",
+                "teleport_to", "bring_player", "heal_player", "revive_player",
+                "spectate_player", "screenshot_player", "view_player_history",
+            }
+        },
+        admin = {
+            label = "Admin",
+            inherits = "moderator",  -- inherits all moderator permissions
+            permissions = {
+                "delete_report", "freeze_player", "ragdoll_player", "kick_player",
+                "manage_inventory", "view_statistics",
+            }
+        },
+        superadmin = {
+            label = "Super Admin",
+            inherits = "admin",
+            permissions = {}
+        }
+    },
+    aceGroups = {
+        ["report.moderator"]  = "moderator",
+        ["report.admin"]      = "admin",
+        ["report.superadmin"] = "superadmin",
+    },
+    identifierGroups = {
+        -- ["license:xxx"] = "admin",
+    }
+}
 ```
 
 ---
@@ -168,6 +205,8 @@ Config.Screenshot = {
 ### Server Exports
 ```lua
 exports["sws-report"]:IsAdmin(source)
+exports["sws-report"]:HasPermission(source, permission)
+exports["sws-report"]:GetPlayerGroup(source)
 exports["sws-report"]:GetReports(filter)
 exports["sws-report"]:CloseReport(reportId)
 exports["sws-report"]:IsInventoryAvailable()

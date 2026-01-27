@@ -28,10 +28,10 @@ RegisterNetEvent("sws-report:sendMessage", function(reportId, message)
         return
     end
 
-    local isAdmin = IsPlayerAdmin(source)
+    local canSendAsAdmin = HasPermission(source, Permission.SEND_ADMIN_MESSAGE)
     local isOwner = report:getPlayerId() == player.identifier
 
-    if not isAdmin and not isOwner then
+    if not canSendAsAdmin and not isOwner then
         NotifyPlayer(source, L("error_no_permission"), "error")
         return
     end
@@ -43,7 +43,7 @@ RegisterNetEvent("sws-report:sendMessage", function(reportId, message)
 
     message = SanitizeString(message, MAX_MESSAGE_LENGTH)
 
-    local senderType = isAdmin and SenderType.ADMIN or SenderType.PLAYER
+    local senderType = canSendAsAdmin and SenderType.ADMIN or SenderType.PLAYER
 
     local insertId = MySQL.insert.await([[
         INSERT INTO report_messages (report_id, sender_id, sender_name, sender_type, message)
@@ -108,7 +108,7 @@ RegisterNetEvent("sws-report:getMessages", function(reportId)
 
     if not player then return end
 
-    local isAdmin = IsPlayerAdmin(source)
+    local isAdmin = IsPlayerAdmin(source) -- keep IsPlayerAdmin for read access (any staff can read messages)
 
     -- Check cache first (for active reports)
     local report = Reports[reportId]

@@ -58,6 +58,8 @@ export interface PlayerData {
   identifier: string
   name: string
   isAdmin: boolean
+  permissions?: Record<string, boolean>
+  group?: string
 }
 
 export interface Notification {

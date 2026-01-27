@@ -59,7 +59,7 @@ local function validateInventoryAction(source, reportId, action)
         return false
     end
 
-    if not IsPlayerAdmin(source) then
+    if not HasPermission(source, Permission.MANAGE_INVENTORY) then
         NotifyPlayer(source, L("error_no_permission"), "error")
         return false
     end
@@ -481,7 +481,7 @@ RegisterNetEvent("sws-report:getInventoryActionLog", function(reportId, limit)
         return
     end
 
-    if not IsPlayerAdmin(source) then
+    if not HasPermission(source, Permission.MANAGE_INVENTORY) then
         return
     end
 

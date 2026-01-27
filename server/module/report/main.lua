@@ -346,7 +346,7 @@ RegisterNetEvent("sws-report:claimReport", function(reportId)
         return
     end
 
-    if not IsPlayerAdmin(source) then
+    if not HasPermission(source, Permission.CLAIM_REPORT) then
         NotifyPlayer(source, L("error_no_permission"), "error")
         return
     end
@@ -386,7 +386,7 @@ RegisterNetEvent("sws-report:unclaimReport", function(reportId)
         return
     end
 
-    if not IsPlayerAdmin(source) then
+    if not HasPermission(source, Permission.CLAIM_REPORT) then
         NotifyPlayer(source, L("error_no_permission"), "error")
         return
     end
@@ -426,7 +426,7 @@ RegisterNetEvent("sws-report:resolveReport", function(reportId)
         return
     end
 
-    if not IsPlayerAdmin(source) then
+    if not HasPermission(source, Permission.RESOLVE_REPORT) then
         NotifyPlayer(source, L("error_no_permission"), "error")
         return
     end
@@ -474,15 +474,15 @@ RegisterNetEvent("sws-report:deleteReport", function(reportId)
         return
     end
 
-    local isAdmin = IsPlayerAdmin(source)
+    local canAdminDelete = HasPermission(source, Permission.DELETE_REPORT)
     local isOwner = report:getPlayerId() == player.identifier
 
-    if not isAdmin and not isOwner then
+    if not canAdminDelete and not isOwner then
         NotifyPlayer(source, L("error_cannot_delete"), "error")
         return
     end
 
-    if not isAdmin and report:isClaimed() then
+    if not canAdminDelete and report:isClaimed() then
         NotifyPlayer(source, L("error_cannot_delete"), "error")
         return
     end
@@ -513,7 +513,7 @@ end)
 RegisterNetEvent("sws-report:getReports", function(filter)
     local source = source
 
-    if not IsPlayerAdmin(source) then
+    if not HasPermission(source, Permission.VIEW_REPORTS) then
         NotifyPlayer(source, L("error_no_permission"), "error")
         return
     end
@@ -664,7 +664,7 @@ RegisterNetEvent("sws-report:setPriority", function(reportId, priority)
         return
     end
 
-    if not IsPlayerAdmin(source) then
+    if not HasPermission(source, Permission.SET_PRIORITY) then
         NotifyPlayer(source, L("error_no_permission"), "error")
         return
     end

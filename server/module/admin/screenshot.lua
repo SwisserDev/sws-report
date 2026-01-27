@@ -196,10 +196,10 @@ RegisterNetEvent("sws-report:requestUserScreenshot", function(reportId)
         return
     end
 
-    local isAdmin = IsPlayerAdmin(source)
+    local canScreenshot = HasPermission(source, Permission.SCREENSHOT_PLAYER)
     local isOwner = report:getPlayerId() == player.identifier
 
-    if not isAdmin and not isOwner then
+    if not canScreenshot and not isOwner then
         NotifyPlayer(source, L("error_no_permission"), "error")
         return
     end

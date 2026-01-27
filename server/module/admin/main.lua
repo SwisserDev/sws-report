@@ -13,7 +13,8 @@ RegisterNetEvent("sws-report:adminAction", function(reportId, action)
         return
     end
 
-    if not IsPlayerAdmin(source) then
+    -- Permission check: action string matches Permission enum values for player actions
+    if not HasPermission(source, action) then
         NotifyPlayer(source, L("error_no_permission"), "error")
         return
     end
@@ -54,14 +55,25 @@ RegisterNetEvent("sws-report:toggleAdmin", function()
 
     Admins[source] = not Admins[source]
 
+    if Admins[source] then
+        PlayerGroups[source] = "_legacy_admin"
+    else
+        PlayerGroups[source] = false
+    end
+
     if Players[source] then
         Players[source].isAdmin = Admins[source]
     end
 
+    local permissions = Admins[source] and GetPlayerPermissions(source) or {}
+    local group = Admins[source] and GetPlayerGroup(source) or nil
+
     TriggerClientEvent("sws-report:setPlayerData", source, {
         identifier = Players[source].identifier,
         name = Players[source].name,
-        isAdmin = Admins[source]
+        isAdmin = Admins[source],
+        permissions = permissions,
+        group = group
     })
 
     NotifyPlayer(source, ("Admin status: %s"):format(tostring(Admins[source])), "info")

@@ -35,6 +35,37 @@ MessageType = {
     VOICE = "voice"
 }
 
+---@enum Permission
+Permission = {
+    -- Report Management
+    VIEW_REPORTS        = "view_reports",
+    CLAIM_REPORT        = "claim_report",
+    RESOLVE_REPORT      = "resolve_report",
+    DELETE_REPORT       = "delete_report",
+    SET_PRIORITY        = "set_priority",
+
+    -- Communication
+    SEND_ADMIN_MESSAGE  = "send_admin_message",
+    VIEW_NOTES          = "view_notes",
+    MANAGE_NOTES        = "manage_notes",
+
+    -- Player Actions (strings match AdminAction enum values)
+    TELEPORT_TO         = "teleport_to",
+    BRING_PLAYER        = "bring_player",
+    HEAL_PLAYER         = "heal_player",
+    REVIVE_PLAYER       = "revive_player",
+    FREEZE_PLAYER       = "freeze_player",
+    SPECTATE_PLAYER     = "spectate_player",
+    SCREENSHOT_PLAYER   = "screenshot_player",
+    RAGDOLL_PLAYER      = "ragdoll_player",
+    KICK_PLAYER         = "kick_player",
+
+    -- Features
+    MANAGE_INVENTORY    = "manage_inventory",
+    VIEW_STATISTICS     = "view_statistics",
+    VIEW_PLAYER_HISTORY = "view_player_history",
+}
+
 ---@enum AdminAction
 AdminAction = {
     TELEPORT_TO = "teleport_to",

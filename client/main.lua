@@ -16,6 +16,12 @@ local currentTheme = Config.UI.defaultTheme
 ---@type boolean Voice messages enabled
 local voiceMessagesEnabled = false
 
+---@type table<string, boolean> Player permissions (RBAC)
+local playerPermissions = {}
+
+---@type string|nil Player group name
+local playerGroup = nil
+
 ---@type ReportData[] Player's reports
 local myReports = {}
 
@@ -42,7 +48,9 @@ local function openUI(forceAdmin)
             playerData = {
                 identifier = playerIdentifier,
                 name = playerName,
-                isAdmin = isAdmin
+                isAdmin = isAdmin,
+                permissions = playerPermissions,
+                group = playerGroup
             },
             locale = CurrentLocale,
             voiceMessagesEnabled = voiceMessagesEnabled
@@ -253,10 +261,12 @@ RegisterNetEvent("sws-report:setPlayerData", function(data)
     playerIdentifier = data.identifier
     playerName = data.name
     isAdmin = data.isAdmin
+    playerPermissions = data.permissions or {}
+    playerGroup = data.group
     voiceMessagesEnabled = data.voiceMessagesEnabled or false
 
-    DebugPrint(("Player data set: %s (%s) - Admin: %s - Voice: %s"):format(
-        playerName, playerIdentifier, tostring(isAdmin), tostring(voiceMessagesEnabled)
+    DebugPrint(("Player data set: %s (%s) - Admin: %s - Group: %s - Voice: %s"):format(
+        playerName, playerIdentifier, tostring(isAdmin), tostring(playerGroup), tostring(voiceMessagesEnabled)
     ))
 end)
 

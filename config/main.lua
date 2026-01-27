@@ -104,6 +104,51 @@ Config.AdminIdentifiers = {
     "license:815c4d6cf569fc8361f3c94bfec50f0a16643e52"
 }
 
+-- Permission Groups (RBAC)
+-- Optional: If nil/commented out, the legacy AdminAcePermission + AdminIdentifiers
+-- system is used with full access for all admins.
+-- Uncomment and configure to enable granular permission groups.
+--[[
+Config.Permissions = {
+    groups = {
+        moderator = {
+            label = "Moderator",
+            permissions = {
+                "view_reports", "claim_report", "resolve_report", "set_priority",
+                "send_admin_message", "view_notes", "manage_notes",
+                "teleport_to", "bring_player", "heal_player", "revive_player",
+                "spectate_player", "screenshot_player", "view_player_history",
+            }
+        },
+        admin = {
+            label = "Admin",
+            inherits = "moderator",
+            permissions = {
+                "delete_report", "freeze_player", "ragdoll_player", "kick_player",
+                "manage_inventory", "view_statistics",
+            }
+        },
+        superadmin = {
+            label = "Super Admin",
+            inherits = "admin",
+            permissions = {} -- inherits everything from admin
+        }
+    },
+
+    -- Map ACE permissions to groups
+    aceGroups = {
+        ["report.moderator"]  = "moderator",
+        ["report.admin"]      = "admin",
+        ["report.superadmin"] = "superadmin",
+    },
+
+    -- Map specific identifiers to groups (overrides ACE)
+    identifierGroups = {
+        -- ["license:xxx"] = "admin",
+    }
+}
+]]
+
 -- Notification Settings
 Config.Sounds = {
     enabled = true,

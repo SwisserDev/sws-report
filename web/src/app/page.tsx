@@ -37,7 +37,30 @@ export default function Home() {
       setPlayerData({
         identifier: "license:test123",
         name: "TestPlayer",
-        isAdmin: true
+        isAdmin: true,
+        permissions: {
+          view_reports: true,
+          claim_report: true,
+          resolve_report: true,
+          delete_report: true,
+          set_priority: true,
+          send_admin_message: true,
+          view_notes: true,
+          manage_notes: true,
+          teleport_to: true,
+          bring_player: true,
+          heal_player: true,
+          revive_player: true,
+          freeze_player: true,
+          spectate_player: true,
+          screenshot_player: true,
+          ragdoll_player: true,
+          kick_player: true,
+          manage_inventory: true,
+          view_statistics: true,
+          view_player_history: true,
+        },
+        group: "admin"
       })
       setCategories([
         { id: "general", label: "General", icon: "fa-circle-info" },

@@ -13,6 +13,12 @@ Cooldowns = {}
 ---@type boolean Whether voice message database columns exist
 VoiceMessagesAvailable = false
 
+---@type table<integer, string|false> Player source -> group name or false (legacy) or "_legacy_admin"
+PlayerGroups = {}
+
+---@type table<string, table<string, boolean>> Group name -> {permission -> true}
+ResolvedGroupPermissions = {}
+
 ---@class PlayerData
 ---@field source integer Server ID
 ---@field identifier string Player identifier
@@ -83,6 +89,105 @@ local function savePlayerIdentifiers(source, primaryIdentifier)
     ]], { primaryIdentifier, parsed.license, parsed.steam, parsed.discord, parsed.fivem })
 end
 
+---Resolve all group permissions with inheritance (called once at resource start)
+local function resolveAllGroupPermissions()
+    ResolvedGroupPermissions = {}
+
+    if not Config.Permissions or not Config.Permissions.groups then
+        return
+    end
+
+    local function resolveGroup(groupName, visited)
+        if ResolvedGroupPermissions[groupName] then
+            return ResolvedGroupPermissions[groupName]
+        end
+
+        visited = visited or {}
+        if visited[groupName] then
+            PrintError(("Circular inheritance detected for group '%s'"):format(groupName))
+            return {}
+        end
+        visited[groupName] = true
+
+        local group = Config.Permissions.groups[groupName]
+        if not group then
+            PrintError(("Group '%s' not found in Config.Permissions.groups"):format(groupName))
+            return {}
+        end
+
+        local perms = {}
+
+        -- Inherit from parent first
+        if group.inherits then
+            local parentPerms = resolveGroup(group.inherits, visited)
+            for perm, val in pairs(parentPerms) do
+                perms[perm] = val
+            end
+        end
+
+        -- Add own permissions
+        for _, perm in ipairs(group.permissions or {}) do
+            perms[perm] = true
+        end
+
+        ResolvedGroupPermissions[groupName] = perms
+        return perms
+    end
+
+    for groupName in pairs(Config.Permissions.groups) do
+        resolveGroup(groupName)
+    end
+
+    DebugPrint(("Resolved permissions for %d groups"):format(#(function() local n = 0; for _ in pairs(ResolvedGroupPermissions) do n = n + 1 end; return n end and {ResolvedGroupPermissions} or {})))
+end
+
+---Determine which RBAC group a player belongs to
+---@param source integer Player server ID
+---@return string|nil groupName The group name or nil if no RBAC group matches
+local function resolvePlayerGroup(source)
+    if not Config.Permissions then
+        return nil
+    end
+
+    local identifiers = getAllIdentifiers(source)
+
+    -- Check identifier-based groups first (highest priority)
+    if Config.Permissions.identifierGroups then
+        for _, identifier in ipairs(identifiers) do
+            local group = Config.Permissions.identifierGroups[identifier]
+            if group and Config.Permissions.groups[group] then
+                return group
+            end
+        end
+    end
+
+    -- Check ACE-based groups, pick the one with most permissions (deepest inheritance)
+    if Config.Permissions.aceGroups then
+        local bestGroup = nil
+        local bestPermCount = -1
+
+        for ace, groupName in pairs(Config.Permissions.aceGroups) do
+            if IsPlayerAceAllowed(source, ace) then
+                local perms = ResolvedGroupPermissions[groupName]
+                local count = 0
+                if perms then
+                    for _ in pairs(perms) do count = count + 1 end
+                end
+                if count > bestPermCount then
+                    bestPermCount = count
+                    bestGroup = groupName
+                end
+            end
+        end
+
+        if bestGroup then
+            return bestGroup
+        end
+    end
+
+    return nil
+end
+
 ---Check if player is admin
 ---@param source integer Player server ID
 ---@return boolean
@@ -91,8 +196,20 @@ function IsPlayerAdmin(source)
         return Admins[source]
     end
 
+    -- RBAC path: check if player belongs to any group
+    if Config.Permissions then
+        local group = resolvePlayerGroup(source)
+        if group then
+            Admins[source] = true
+            PlayerGroups[source] = group
+            return true
+        end
+    end
+
+    -- Legacy path
     if IsPlayerAceAllowed(source, Config.AdminAcePermission) then
         Admins[source] = true
+        PlayerGroups[source] = "_legacy_admin"
         return true
     end
 
@@ -101,13 +218,86 @@ function IsPlayerAdmin(source)
         for _, adminId in ipairs(Config.AdminIdentifiers) do
             if identifier == adminId then
                 Admins[source] = true
+                PlayerGroups[source] = "_legacy_admin"
                 return true
             end
         end
     end
 
     Admins[source] = false
+    PlayerGroups[source] = false
     return false
+end
+
+---Check if player has a specific permission
+---@param source integer Player server ID
+---@param permission string Permission string from Permission enum
+---@return boolean
+function HasPermission(source, permission)
+    if not IsPlayerAdmin(source) then
+        return false
+    end
+
+    -- Legacy admins have all permissions
+    if PlayerGroups[source] == "_legacy_admin" then
+        return true
+    end
+
+    -- No RBAC configured = all permissions
+    if not Config.Permissions then
+        return true
+    end
+
+    local group = PlayerGroups[source]
+    if not group or group == false then
+        return false
+    end
+
+    local perms = ResolvedGroupPermissions[group]
+    if not perms then
+        return false
+    end
+
+    return perms[permission] == true
+end
+
+---Get all permissions for a player as a table
+---@param source integer Player server ID
+---@return table<string, boolean>
+function GetPlayerPermissions(source)
+    if not IsPlayerAdmin(source) then
+        return {}
+    end
+
+    -- Legacy admins or no RBAC: all permissions
+    if PlayerGroups[source] == "_legacy_admin" or not Config.Permissions then
+        local allPerms = {}
+        for _, perm in pairs(Permission) do
+            allPerms[perm] = true
+        end
+        return allPerms
+    end
+
+    local group = PlayerGroups[source]
+    if not group or group == false then
+        return {}
+    end
+
+    return ResolvedGroupPermissions[group] or {}
+end
+
+---Get player's group name
+---@param source integer Player server ID
+---@return string|nil
+function GetPlayerGroup(source)
+    local group = PlayerGroups[source]
+    if group and group ~= false and group ~= "_legacy_admin" then
+        return group
+    end
+    if group == "_legacy_admin" then
+        return "admin"
+    end
+    return nil
 end
 
 ---Get player data
@@ -230,10 +420,15 @@ RegisterNetEvent("sws-report:playerJoined", function()
 
     DebugPrint(("Player joined: %s (%s) - Admin: %s"):format(name, identifier, tostring(Players[source].isAdmin)))
 
+    local permissions = Players[source].isAdmin and GetPlayerPermissions(source) or {}
+    local group = Players[source].isAdmin and GetPlayerGroup(source) or nil
+
     TriggerClientEvent("sws-report:setPlayerData", source, {
         identifier = identifier,
         name = name,
         isAdmin = Players[source].isAdmin,
+        permissions = permissions,
+        group = group,
         voiceMessagesEnabled = VoiceMessagesAvailable and Config.VoiceMessages.enabled
     })
 
@@ -261,6 +456,7 @@ AddEventHandler("playerDropped", function(reason)
 
     Players[source] = nil
     Admins[source] = nil
+    PlayerGroups[source] = nil
 end)
 
 ---Compare semantic versions
@@ -351,6 +547,7 @@ AddEventHandler("onResourceStart", function(resourceName)
 
     PrintInfo("Resource started - Loading reports from database...")
 
+    resolveAllGroupPermissions()
     LoadReportsFromDatabase()
 
     PrintInfo(("Loaded %d active reports"):format(GetActiveReportCount()))
@@ -389,6 +586,14 @@ end)
 
 exports("GetPlayerData", function(source)
     return GetPlayerData(source)
+end)
+
+exports("HasPermission", function(source, permission)
+    return HasPermission(source, permission)
+end)
+
+exports("GetPlayerGroup", function(source)
+    return GetPlayerGroup(source)
 end)
 
 Citizen.CreateThread(function()
