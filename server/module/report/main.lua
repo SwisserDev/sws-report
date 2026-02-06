@@ -376,7 +376,7 @@ RegisterNetEvent("sws-report:createReport", function(data)
     NotifyAdmins(L("new_report_from", player.name), "info", source)
 
     for adminSource, isAdmin in pairs(Admins) do
-        if isAdmin then
+        if isAdmin and adminSource ~= source then
             TriggerClientEvent("sws-report:newReport", adminSource, serializedReport)
         end
     end
