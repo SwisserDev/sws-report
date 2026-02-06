@@ -1,6 +1,59 @@
 local MAX_SUBJECT_LENGTH = 128
 local MAX_DESCRIPTION_LENGTH = 2000
 
+---Normalize timestamps to ISO 8601 UTC for consistent client parsing.
+---@param value unknown
+---@return string|nil
+local function normalizeTimestamp(value)
+    if value == nil or value == false then
+        return nil
+    end
+
+    local valueType = type(value)
+
+    if valueType == "number" then
+        local seconds = value
+        if seconds > 1000000000000 then
+            seconds = math.floor(seconds / 1000)
+        end
+        if seconds < 0 then
+            return nil
+        end
+        return os.date("!%Y-%m-%dT%H:%M:%SZ", math.floor(seconds))
+    end
+
+    if valueType ~= "string" then
+        return nil
+    end
+
+    local timestamp = value:match("^%s*(.-)%s*$")
+    if timestamp == "" then
+        return nil
+    end
+
+    if timestamp:find("T", 1, true) then
+        return timestamp
+    end
+
+    local year, month, day, hour, minute, second = timestamp:match("^(%d%d%d%d)%-(%d%d)%-(%d%d) (%d%d):(%d%d):(%d%d)")
+    if year then
+        return ("%s-%s-%sT%s:%s:%sZ"):format(year, month, day, hour, minute, second)
+    end
+
+    if timestamp:match("^%d+$") then
+        local numeric = tonumber(timestamp)
+        if numeric then
+            local seconds = numeric
+            if seconds > 1000000000000 then
+                seconds = math.floor(seconds / 1000)
+            end
+            return os.date("!%Y-%m-%dT%H:%M:%SZ", math.floor(seconds))
+        end
+    end
+
+    return timestamp
+end
+
 function LoadReportsFromDatabase()
     local results = MySQL.query.await([[
         SELECT r.*,
@@ -50,9 +103,9 @@ function LoadReportsFromDatabase()
             claimedByName = row.claimed_by_name,
             priority = row.priority,
             playerCoords = DeserializeCoords(row.player_coords),
-            createdAt = row.created_at,
-            updatedAt = row.updated_at,
-            resolvedAt = row.resolved_at,
+            createdAt = normalizeTimestamp(row.created_at),
+            updatedAt = normalizeTimestamp(row.updated_at),
+            resolvedAt = normalizeTimestamp(row.resolved_at),
             messages = messages
         }
 
@@ -126,9 +179,9 @@ function GetPlayerReports(identifier, includeResolved)
                 claimedByName = row.claimed_by_name,
                 priority = row.priority,
                 playerCoords = DeserializeCoords(row.player_coords),
-                createdAt = row.created_at,
-                updatedAt = row.updated_at,
-                resolvedAt = row.resolved_at,
+                createdAt = normalizeTimestamp(row.created_at),
+                updatedAt = normalizeTimestamp(row.updated_at),
+                resolvedAt = normalizeTimestamp(row.resolved_at),
                 isPlayerOnline = true,
                 messages = {}
             })
@@ -587,9 +640,9 @@ RegisterNetEvent("sws-report:getReports", function(filter)
             claimedByName = row.claimed_by_name,
             priority = row.priority,
             playerCoords = DeserializeCoords(row.player_coords),
-            createdAt = row.created_at,
-            updatedAt = row.updated_at,
-            resolvedAt = row.resolved_at,
+            createdAt = normalizeTimestamp(row.created_at),
+            updatedAt = normalizeTimestamp(row.updated_at),
+            resolvedAt = normalizeTimestamp(row.resolved_at),
             isPlayerOnline = IsPlayerOnline(row.player_id)
         })
     end

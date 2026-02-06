@@ -1,24 +1,62 @@
 /**
  * Parse timestamp handling both ISO 8601 UTC and legacy formats
  */
-const parseTimestamp = (timestamp: string): Date => {
-  // Guard against null/undefined/non-string
-  if (!timestamp || typeof timestamp !== 'string') {
-    return new Date()
+const parseTimestamp = (timestamp: unknown): Date | null => {
+  if (timestamp instanceof Date) {
+    return Number.isNaN(timestamp.getTime()) ? null : timestamp
   }
-  // ISO 8601 format (new): "2025-01-16T14:30:45Z"
-  if (timestamp.includes('T')) {
-    return new Date(timestamp)
+
+  const parseUnixNumber = (value: number): Date | null => {
+    if (!Number.isFinite(value) || value < 0) return null
+    const seconds = value > 1_000_000_000_000 ? Math.floor(value / 1000) : Math.floor(value)
+    const date = new Date(seconds * 1000)
+    return Number.isNaN(date.getTime()) ? null : date
   }
-  // Legacy format: "2025-01-16 14:30:45" - treat as UTC
-  return new Date(timestamp.replace(' ', 'T') + 'Z')
+
+  if (typeof timestamp === "number") {
+    return parseUnixNumber(timestamp)
+  }
+
+  if (typeof timestamp !== "string") {
+    return null
+  }
+
+  const normalized = timestamp.trim()
+  if (!normalized) {
+    return null
+  }
+
+  if (/^\d+$/.test(normalized)) {
+    return parseUnixNumber(Number(normalized))
+  }
+
+  if (normalized.includes("T")) {
+    const isoDate = new Date(normalized)
+    return Number.isNaN(isoDate.getTime()) ? null : isoDate
+  }
+
+  const sqlTimestamp = normalized.match(/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})(?:\.\d+)?$/)
+  if (sqlTimestamp) {
+    const sqlDate = new Date(`${sqlTimestamp[1]}T${sqlTimestamp[2]}Z`)
+    return Number.isNaN(sqlDate.getTime()) ? null : sqlDate
+  }
+
+  const fallbackDate = new Date(normalized)
+  return Number.isNaN(fallbackDate.getTime()) ? null : fallbackDate
 }
 
 /**
  * Format a timestamp for display
  */
-export const formatTimestamp = (timestamp: string): string => {
+export const formatTimestamp = (timestamp: unknown): string => {
   const date = parseTimestamp(timestamp)
+  if (!date) {
+    if (typeof timestamp === "string" && timestamp.trim() !== "") {
+      return timestamp
+    }
+    return "Unknown"
+  }
+
   return date.toLocaleString("en-US", {
     month: "short",
     day: "numeric",
@@ -30,10 +68,14 @@ export const formatTimestamp = (timestamp: string): string => {
 /**
  * Format relative time (e.g., "2 hours ago")
  */
-export const formatRelativeTime = (timestamp: string): string => {
+export const formatRelativeTime = (timestamp: unknown): string => {
   const date = parseTimestamp(timestamp)
+  if (!date) return "Unknown"
+
   const now = new Date()
   const diff = now.getTime() - date.getTime()
+
+  if (diff < 0) return "Just now"
 
   const seconds = Math.floor(diff / 1000)
   const minutes = Math.floor(seconds / 60)
