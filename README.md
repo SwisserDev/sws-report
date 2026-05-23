@@ -195,6 +195,83 @@ Config.Permissions = {
 
 ---
 
+## ACE Permissions
+
+Admin access is granted through FiveM's built-in ACE system. You define the
+permissions in your `server.cfg`, then assign them to players (via their
+identifier) or to a group (via a principal). The resource itself only checks
+whether a player **is allowed** the configured ACE — it does not create any
+ACEs for you.
+
+There are two ways to use it, depending on whether you enabled `Config.Permissions`.
+
+### 1. Legacy mode (single admin permission)
+
+If `Config.Permissions` is left commented out, every admin gets full access.
+The only ACE that matters is `Config.AdminAcePermission` (default `report.admin`).
+
+Add the following to your `server.cfg` **above** `ensure sws-report`:
+
+```cfg
+# Allow the "report.admin" ace object (deny by default elsewhere)
+add_ace group.admin report.admin allow
+
+# Option A: grant it to an existing principal/group
+# (anyone in group.admin now has full report access)
+
+# Option B: grant it directly to a specific player by identifier
+add_principal identifier.license:abc123... group.admin
+# or grant the ace straight to the identifier:
+add_ace identifier.license:abc123... report.admin allow
+```
+
+> Replace `license:abc123...` with the player's real identifier
+> (`license:`, `steam:`, `fivem:`, `discord:` … all work).
+
+Alternatively, you can skip ACE entirely and just list identifiers in
+`config/main.lua`:
+
+```lua
+Config.AdminIdentifiers = {
+    "license:abc123...",
+    "steam:110000123456789"
+}
+```
+
+### 2. Permission groups (RBAC)
+
+If you enabled `Config.Permissions`, the resource maps three ACE objects to
+groups (see `aceGroups` in the config):
+
+| ACE object          | Group        | Access level                          |
+|---------------------|--------------|---------------------------------------|
+| `report.moderator`  | `moderator`  | View, claim, resolve, basic mod tools |
+| `report.admin`      | `admin`      | Moderator + delete, kick, inventory…  |
+| `report.superadmin` | `superadmin` | Everything (inherits admin)           |
+
+Define the ACEs and assign them in your `server.cfg` **above** `ensure sws-report`:
+
+```cfg
+# 1. Allow each report ace for its matching group
+add_ace group.moderator  report.moderator  allow
+add_ace group.admin      report.admin      allow
+add_ace group.superadmin report.superadmin allow
+
+# 2. Add your staff members to the matching group
+add_principal identifier.license:abc123... group.moderator
+add_principal identifier.license:def456... group.admin
+add_principal identifier.steam:1100001234... group.superadmin
+```
+
+When a player holds more than one matching ACE, the resource automatically
+picks the group with the **highest** access level.
+
+> **Tip:** Identifier-based groups in `Config.Permissions.identifierGroups`
+> take priority over ACE groups, so you can pin a single person to a group
+> without touching `server.cfg`.
+
+---
+
 ## Commands & Exports
 
 ### Commands
