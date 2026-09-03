@@ -1,115 +1,58 @@
 local MAX_SUBJECT_LENGTH = 128
 local MAX_DESCRIPTION_LENGTH = 2000
 
----Normalize timestamps to ISO 8601 UTC for consistent client parsing.
----@param value unknown
----@return string|nil
-local function normalizeTimestamp(value)
-    if value == nil or value == false then
-        return nil
-    end
-
-    local valueType = type(value)
-
-    if valueType == "number" then
-        local seconds = value
-        if seconds > 1000000000000 then
-            seconds = math.floor(seconds / 1000)
-        end
-        if seconds < 0 then
-            return nil
-        end
-        return os.date("!%Y-%m-%dT%H:%M:%SZ", math.floor(seconds))
-    end
-
-    if valueType ~= "string" then
-        return nil
-    end
-
-    local timestamp = value:match("^%s*(.-)%s*$")
-    if timestamp == "" then
-        return nil
-    end
-
-    if timestamp:find("T", 1, true) then
-        return timestamp
-    end
-
-    local year, month, day, hour, minute, second = timestamp:match("^(%d%d%d%d)%-(%d%d)%-(%d%d) (%d%d):(%d%d):(%d%d)")
-    if year then
-        return ("%s-%s-%sT%s:%s:%sZ"):format(year, month, day, hour, minute, second)
-    end
-
-    if timestamp:match("^%d+$") then
-        local numeric = tonumber(timestamp)
-        if numeric then
-            local seconds = numeric
-            if seconds > 1000000000000 then
-                seconds = math.floor(seconds / 1000)
-            end
-            return os.date("!%Y-%m-%dT%H:%M:%SZ", math.floor(seconds))
-        end
-    end
-
-    return timestamp
+---Convert a reports row into report data
+---@param row table
+---@return ReportData
+local function reportFromRow(row)
+    return {
+        id = row.id,
+        playerId = row.player_id,
+        playerName = row.player_name,
+        subject = row.subject,
+        category = row.category,
+        description = row.description,
+        status = row.status,
+        claimedBy = row.claimed_by,
+        claimedByName = row.claimed_by_name,
+        priority = row.priority,
+        playerCoords = DeserializeCoords(row.player_coords),
+        createdAt = NormalizeTimestamp(row.created_at),
+        updatedAt = NormalizeTimestamp(row.updated_at),
+        resolvedAt = NormalizeTimestamp(row.resolved_at),
+        messages = {}
+    }
 end
 
 function LoadReportsFromDatabase()
-    local results = MySQL.query.await([[
-        SELECT r.*,
-               GROUP_CONCAT(
-                   JSON_OBJECT(
-                       'id', m.id,
-                       'reportId', m.report_id,
-                       'senderId', m.sender_id,
-                       'senderName', m.sender_name,
-                       'senderType', m.sender_type,
-                       'message', m.message,
-                       'createdAt', m.created_at
-                   )
-               ) as messages
-        FROM reports r
-        LEFT JOIN report_messages m ON r.id = m.report_id
-        WHERE r.status != 'resolved'
-        GROUP BY r.id
-        ORDER BY r.created_at DESC
+    local rows = MySQL.query.await([[
+        SELECT * FROM reports
+        WHERE status != 'resolved'
+        ORDER BY created_at DESC
     ]])
 
-    if not results then return end
+    if not rows then return end
 
-    for _, row in ipairs(results) do
-        local messages = {}
+    local ids = {}
+    for _, row in ipairs(rows) do
+        Reports[row.id] = Report:new(reportFromRow(row))
+        ids[#ids + 1] = math.tointeger(row.id) or row.id
+    end
 
-        if row.messages then
-            local msgArray = json.decode("[" .. row.messages .. "]")
-            if msgArray then
-                for _, msg in ipairs(msgArray) do
-                    if msg.id then
-                        table.insert(messages, msg)
-                    end
-                end
-            end
+    if #ids == 0 then return end
+
+    -- Separate query on purpose: GROUP_CONCAT silently truncates at group_concat_max_len
+    -- (1024 bytes by default), which broke json.decode and dropped reports on start
+    local messages = MySQL.query.await(
+        ("SELECT %s FROM report_messages WHERE report_id IN (%s) ORDER BY created_at ASC, id ASC")
+            :format(GetMessageColumns(), table.concat(ids, ","))
+    )
+
+    for _, row in ipairs(messages or {}) do
+        local report = Reports[row.report_id]
+        if report then
+            report:addMessage(FormatMessageRow(row))
         end
-
-        local reportData = {
-            id = row.id,
-            playerId = row.player_id,
-            playerName = row.player_name,
-            subject = row.subject,
-            category = row.category,
-            description = row.description,
-            status = row.status,
-            claimedBy = row.claimed_by,
-            claimedByName = row.claimed_by_name,
-            priority = row.priority,
-            playerCoords = DeserializeCoords(row.player_coords),
-            createdAt = normalizeTimestamp(row.created_at),
-            updatedAt = normalizeTimestamp(row.updated_at),
-            resolvedAt = normalizeTimestamp(row.resolved_at),
-            messages = messages
-        }
-
-        Reports[row.id] = Report:new(reportData)
     end
 end
 
@@ -167,24 +110,9 @@ function GetPlayerReports(identifier, includeResolved)
         ]], { identifier })
 
         for _, row in ipairs(resolvedResults or {}) do
-            table.insert(reports, {
-                id = row.id,
-                playerId = row.player_id,
-                playerName = row.player_name,
-                subject = row.subject,
-                category = row.category,
-                description = row.description,
-                status = row.status,
-                claimedBy = row.claimed_by,
-                claimedByName = row.claimed_by_name,
-                priority = row.priority,
-                playerCoords = DeserializeCoords(row.player_coords),
-                createdAt = normalizeTimestamp(row.created_at),
-                updatedAt = normalizeTimestamp(row.updated_at),
-                resolvedAt = normalizeTimestamp(row.resolved_at),
-                isPlayerOnline = true,
-                messages = {}
-            })
+            local reportData = reportFromRow(row)
+            reportData.isPlayerOnline = true
+            table.insert(reports, reportData)
         end
     end
 
@@ -646,23 +574,9 @@ RegisterNetEvent("sws-report:getReports", function(filter)
 
     local reports = {}
     for _, row in ipairs(results or {}) do
-        table.insert(reports, {
-            id = row.id,
-            playerId = row.player_id,
-            playerName = row.player_name,
-            subject = row.subject,
-            category = row.category,
-            description = row.description,
-            status = row.status,
-            claimedBy = row.claimed_by,
-            claimedByName = row.claimed_by_name,
-            priority = row.priority,
-            playerCoords = DeserializeCoords(row.player_coords),
-            createdAt = normalizeTimestamp(row.created_at),
-            updatedAt = normalizeTimestamp(row.updated_at),
-            resolvedAt = normalizeTimestamp(row.resolved_at),
-            isPlayerOnline = IsPlayerOnline(row.player_id)
-        })
+        local reportData = reportFromRow(row)
+        reportData.isPlayerOnline = IsPlayerOnline(row.player_id)
+        table.insert(reports, reportData)
     end
 
     TriggerClientEvent("sws-report:setAllReports", source, reports)

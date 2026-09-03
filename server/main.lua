@@ -25,6 +25,53 @@ ResolvedGroupPermissions = {}
 ---@field name string Player name
 ---@field isAdmin boolean Admin status
 
+---Normalize database/runtime timestamps to ISO 8601 UTC for consistent client parsing
+---@param value unknown
+---@return string|nil
+function NormalizeTimestamp(value)
+    if value == nil or value == false then
+        return nil
+    end
+
+    local valueType = type(value)
+
+    if valueType == "number" then
+        local seconds = value
+        -- oxmysql hands out milliseconds, Lua os.time() seconds
+        if seconds > 1000000000000 then
+            seconds = math.floor(seconds / 1000)
+        end
+        if seconds < 0 then
+            return nil
+        end
+        return os.date("!%Y-%m-%dT%H:%M:%SZ", math.floor(seconds))
+    end
+
+    if valueType ~= "string" then
+        return nil
+    end
+
+    local timestamp = value:match("^%s*(.-)%s*$")
+    if timestamp == "" then
+        return nil
+    end
+
+    if timestamp:find("T", 1, true) then
+        return timestamp
+    end
+
+    local year, month, day, hour, minute, second = timestamp:match("^(%d%d%d%d)%-(%d%d)%-(%d%d) (%d%d):(%d%d):(%d%d)")
+    if year then
+        return ("%s-%s-%sT%s:%s:%sZ"):format(year, month, day, hour, minute, second)
+    end
+
+    if timestamp:match("^%d+$") then
+        return NormalizeTimestamp(tonumber(timestamp))
+    end
+
+    return timestamp
+end
+
 ---Get player primary identifier
 ---@param source integer Player server ID
 ---@return string | nil
@@ -548,11 +595,14 @@ AddEventHandler("onResourceStart", function(resourceName)
     PrintInfo("Resource started - Loading reports from database...")
 
     resolveAllGroupPermissions()
+
+    -- Needs to be known before loading reports, it decides which message columns exist
+    VoiceMessagesAvailable = checkVoiceMigration()
+
     LoadReportsFromDatabase()
 
     PrintInfo(("Loaded %d active reports"):format(GetActiveReportCount()))
 
-    VoiceMessagesAvailable = checkVoiceMigration()
     if VoiceMessagesAvailable then
         if not Config.Discord.enabled or not Config.Discord.webhook or Config.Discord.webhook == "" then
             VoiceMessagesAvailable = false
