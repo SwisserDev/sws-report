@@ -521,28 +521,46 @@ RegisterNetEvent("sws-report:deleteReport", function(reportId)
 
     if not player then return end
 
+    -- Resolved reports are no longer cached, so fall back to the database
+    local reportData
     local report = Reports[reportId]
-    if not report then
-        NotifyPlayer(source, L("error_not_found"), "error")
-        return
+    if report then
+        reportData = report:serialize()
+    else
+        local rows = MySQL.query.await([[
+            SELECT id, player_id, player_name, subject, status FROM reports WHERE id = ?
+        ]], { reportId })
+
+        if not rows or not rows[1] then
+            NotifyPlayer(source, L("error_not_found"), "error")
+            return
+        end
+
+        reportData = {
+            id = rows[1].id,
+            playerId = rows[1].player_id,
+            playerName = rows[1].player_name,
+            subject = rows[1].subject,
+            status = rows[1].status
+        }
     end
 
     local canAdminDelete = HasPermission(source, Permission.DELETE_REPORT)
-    local isOwner = report:getPlayerId() == player.identifier
+    local isOwner = reportData.playerId == player.identifier
 
     if not canAdminDelete and not isOwner then
         NotifyPlayer(source, L("error_cannot_delete"), "error")
         return
     end
 
-    if not canAdminDelete and report:isClaimed() then
+    -- Players may only withdraw reports nobody has picked up yet
+    if not canAdminDelete and reportData.status ~= ReportStatus.OPEN then
         NotifyPlayer(source, L("error_cannot_delete"), "error")
         return
     end
 
     MySQL.query.await("DELETE FROM reports WHERE id = ?", { reportId })
 
-    local reportData = report:serialize()
     Reports[reportId] = nil
 
     local ownerData = GetPlayerByIdentifier(reportData.playerId)

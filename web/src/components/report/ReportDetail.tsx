@@ -41,7 +41,7 @@ export function ReportDetail() {
   const isClaimed = report.status === "claimed"
   const isResolved = report.status === "resolved"
   const isClaimedByMe = report.claimedBy === playerData?.identifier
-  const canDelete = (isOwner && !isClaimed) || hasPermission("delete_report")
+  const canDelete = (isOwner && report.status === "open") || hasPermission("delete_report")
 
   // Permission-based visibility for action tabs
   const hasPlayerActions = hasPermission("teleport_to") || hasPermission("bring_player") || hasPermission("heal_player") || hasPermission("revive_player")
@@ -386,6 +386,18 @@ export function ReportDetail() {
               </Button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Resolved reports can still be removed by staff */}
+      {isResolved && canDelete && (
+        <div className="flex justify-center px-6 py-3 bg-bg-secondary border-t border-border">
+          <Button size="sm" variant="danger" onClick={() => deleteReport(report.id)}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            {locale.delete || "Delete"}
+          </Button>
         </div>
       )}
     </main>
