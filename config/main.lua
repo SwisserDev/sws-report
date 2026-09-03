@@ -101,7 +101,6 @@ Config.AdminAcePermission = "report.admin"
 Config.AdminIdentifiers = {
     -- "steam:110000xxxxxxxxx",
     -- "license:xxxxxxxxxxxxx"
-    "license:815c4d6cf569fc8361f3c94bfec50f0a16643e52"
 }
 
 -- Permission Groups (RBAC)
