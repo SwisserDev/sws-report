@@ -70,7 +70,7 @@ local function uploadToDiscord(audioBase64, reportId, senderName, callback)
 
     DebugPrint(("Uploading voice message for report #%d (size: %d bytes)"):format(reportId, #audioBase64))
 
-    exports["sws-report"]:uploadVoiceToDiscord({
+    exports[RESOURCE_NAME]:uploadVoiceToDiscord({
         webhookUrl = Config.Discord.webhook,
         base64Audio = audioBase64,
         reportId = reportId,

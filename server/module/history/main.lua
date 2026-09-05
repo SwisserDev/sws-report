@@ -82,7 +82,7 @@ local function getPlayerHistory(playerId, limit)
 
     local totalReports = totalResults and totalResults[1] and totalResults[1].total or #reports
 
-    local notes = exports["sws-report"]:GetPlayerNotes(playerId) or {}
+    local notes = exports[RESOURCE_NAME]:GetPlayerNotes(playerId) or {}
 
     -- Load player identifiers from database (works for offline players too)
     local identifiers = nil

@@ -21,7 +21,7 @@ local function uploadToDiscord(base64Data, playerName, reportId, callback)
         return
     end
 
-    exports["sws-report"]:uploadScreenshotToDiscord({
+    exports[RESOURCE_NAME]:uploadScreenshotToDiscord({
         webhookUrl = Config.Discord.webhook,
         base64Image = base64Data,
         playerName = playerName,
