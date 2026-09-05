@@ -142,7 +142,18 @@ export const useReportStore = create<ReportState>((set, get) => ({
   setVoiceMessagesEnabled: (enabled) => set({ voiceMessagesEnabled: enabled }),
 
   // Data Actions
-  setPlayerData: (data) => set({ playerData: data }),
+  setPlayerData: (data) => set((state) => {
+    // Kick the user off staff tabs when permissions were revoked while the UI was open
+    const can = (permission: string) => data.permissions ? data.permissions[permission] === true : data.isAdmin
+    const tabAllowed =
+      state.activeTab === "my-reports" ||
+      (state.activeTab === "admin" && can("view_reports")) ||
+      (state.activeTab === "statistics" && can("view_statistics"))
+
+    return tabAllowed
+      ? { playerData: data }
+      : { playerData: data, activeTab: "my-reports", selectedReportId: null }
+  }),
   setMyReports: (reports) => set({ myReports: reports }),
   setAllReports: (reports) => set({ allReports: reports }),
   setCategories: (categories) => set({ categories }),

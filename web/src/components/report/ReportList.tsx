@@ -7,19 +7,19 @@ import { ReportCard } from "./ReportCard"
 import { Button, Select, Input } from "@/components/ui"
 
 export function ReportList() {
-  const { activeTab, setIsCreatingReport, getFilteredReports, locale, filter, setFilter, categories } = useReportStore()
+  const { isVisible, activeTab, setIsCreatingReport, getFilteredReports, locale, filter, setFilter, categories } = useReportStore()
   const { getMyReports } = useNuiActions()
   const [showResolved, setShowResolved] = useState(false)
 
   const reports = getFilteredReports()
 
-  // Fetch reports when showResolved changes (only for player tab)
+  // Refetch on open as well, the cached list from Lua can be stale
   useEffect(() => {
-    if (activeTab === "my-reports") {
+    if (isVisible && activeTab === "my-reports") {
       getMyReports(showResolved)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showResolved, activeTab])
+  }, [showResolved, activeTab, isVisible])
 
   return (
     <aside className="w-[380px] xl:w-[440px] 2xl:w-[520px] flex flex-col border-r border-border bg-bg-secondary">

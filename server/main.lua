@@ -281,7 +281,8 @@ end
 ---@param permission string Permission string from Permission enum
 ---@return boolean
 function HasPermission(source, permission)
-    if not IsPlayerAdmin(source) then
+    -- Handlers read Players[source] right after this check
+    if not Players[source] or not IsPlayerAdmin(source) then
         return false
     end
 
@@ -345,6 +346,38 @@ function GetPlayerGroup(source)
         return "admin"
     end
     return nil
+end
+
+---Drop cached admin state and evaluate it again.
+---Frameworks often grant ACE groups after character selection, long after playerJoined.
+---@param source integer Player server ID
+---@return boolean isAdmin
+function RefreshPlayerPermissions(source)
+    Admins[source] = nil
+    PlayerGroups[source] = nil
+
+    local isAdmin = IsPlayerAdmin(source)
+    if Players[source] then
+        Players[source].isAdmin = isAdmin
+    end
+
+    return isAdmin
+end
+
+---Build the player payload the client and UI work with
+---@param source integer Player server ID
+---@return table
+local function buildClientPlayerData(source)
+    local player = Players[source]
+
+    return {
+        identifier = player.identifier,
+        name = player.name,
+        isAdmin = player.isAdmin,
+        permissions = player.isAdmin and GetPlayerPermissions(source) or {},
+        group = player.isAdmin and GetPlayerGroup(source) or nil,
+        voiceMessagesEnabled = VoiceMessagesAvailable and Config.VoiceMessages.enabled
+    }
 end
 
 ---Get player data
@@ -467,17 +500,7 @@ RegisterNetEvent("sws-report:playerJoined", function()
 
     DebugPrint(("Player joined: %s (%s) - Admin: %s"):format(name, identifier, tostring(Players[source].isAdmin)))
 
-    local permissions = Players[source].isAdmin and GetPlayerPermissions(source) or {}
-    local group = Players[source].isAdmin and GetPlayerGroup(source) or nil
-
-    TriggerClientEvent("sws-report:setPlayerData", source, {
-        identifier = identifier,
-        name = name,
-        isAdmin = Players[source].isAdmin,
-        permissions = permissions,
-        group = group,
-        voiceMessagesEnabled = VoiceMessagesAvailable and Config.VoiceMessages.enabled
-    })
+    TriggerClientEvent("sws-report:setPlayerData", source, buildClientPlayerData(source))
 
     local playerReports = GetPlayerReports(identifier)
     if #playerReports > 0 then
@@ -492,6 +515,27 @@ RegisterNetEvent("sws-report:playerJoined", function()
     broadcastPlayerOnlineStatus(identifier, true)
 end)
 
+---@type table<integer, integer> Last refresh per source (GetGameTimer)
+local lastRefresh = {}
+
+---UI opened: re-check permissions and hand out fresh admin data
+RegisterNetEvent("sws-report:refresh", function()
+    local source = source
+    if not Players[source] then return end
+
+    local now = GetGameTimer()
+    if lastRefresh[source] and now - lastRefresh[source] < 1000 then return end
+    lastRefresh[source] = now
+
+    local isAdmin = RefreshPlayerPermissions(source)
+
+    TriggerClientEvent("sws-report:setPlayerData", source, buildClientPlayerData(source))
+
+    if isAdmin then
+        TriggerClientEvent("sws-report:setAllReports", source, GetActiveReports())
+    end
+end)
+
 ---Player dropped handler
 AddEventHandler("playerDropped", function(reason)
     local source = source
@@ -504,6 +548,7 @@ AddEventHandler("playerDropped", function(reason)
     Players[source] = nil
     Admins[source] = nil
     PlayerGroups[source] = nil
+    lastRefresh[source] = nil
 end)
 
 ---Compare semantic versions

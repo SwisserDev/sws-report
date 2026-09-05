@@ -57,6 +57,9 @@ local function openUI(forceAdmin)
         }
     })
 
+    -- Permissions can change after joining (framework groups, txAdmin), re-check on every open
+    TriggerServerEvent("sws-report:refresh")
+
     DebugPrint("UI opened")
 end
 
@@ -268,6 +271,22 @@ RegisterNetEvent("sws-report:setPlayerData", function(data)
     DebugPrint(("Player data set: %s (%s) - Admin: %s - Group: %s - Voice: %s"):format(
         playerName, playerIdentifier, tostring(isAdmin), tostring(playerGroup), tostring(voiceMessagesEnabled)
     ))
+
+    if isUIOpen then
+        SendNUIMessage({
+            type = NuiMessageType.SET_PLAYER_DATA,
+            data = {
+                playerData = {
+                    identifier = playerIdentifier,
+                    name = playerName,
+                    isAdmin = isAdmin,
+                    permissions = playerPermissions,
+                    group = playerGroup
+                },
+                voiceMessagesEnabled = voiceMessagesEnabled
+            }
+        })
+    end
 end)
 
 RegisterNetEvent("sws-report:setReports", function(reports)

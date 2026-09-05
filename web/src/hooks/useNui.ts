@@ -43,6 +43,15 @@ export function useNuiListener() {
           store.setIsCreatingReport(false)
           break
 
+        case "SET_PLAYER_DATA": {
+          const playerUpdate = data as { playerData: PlayerData; voiceMessagesEnabled?: boolean }
+          store.setPlayerData(playerUpdate.playerData)
+          if (playerUpdate.voiceMessagesEnabled !== undefined) {
+            store.setVoiceMessagesEnabled(playerUpdate.voiceMessagesEnabled)
+          }
+          break
+        }
+
         case "SET_REPORTS":
           store.setMyReports(data as Report[])
           break
