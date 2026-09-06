@@ -306,6 +306,7 @@ RegisterNetEvent("sws-report:createReport", function(data)
     for adminSource, isAdmin in pairs(Admins) do
         if isAdmin and adminSource ~= source then
             TriggerClientEvent("sws-report:newReport", adminSource, serializedReport)
+            TriggerClientEvent("sws-report:playSound", adminSource, "notification")
         end
     end
 

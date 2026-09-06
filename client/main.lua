@@ -456,18 +456,6 @@ RegisterNetEvent("sws-report:notify", function(message, notifyType)
     end
 end)
 
-RegisterNetEvent("sws-report:playSound", function(sound)
-    if isUIOpen and Config.Sounds.enabled then
-        SendNUIMessage({
-            type = NuiMessageType.PLAY_SOUND,
-            data = {
-                sound = sound,
-                volume = Config.Sounds.volume or 0.5
-            }
-        })
-    end
-end)
-
 RegisterNetEvent("sws-report:playerOnlineStatus", function(identifier, isOnline)
     for i, r in ipairs(allReports) do
         if r.playerId == identifier then
