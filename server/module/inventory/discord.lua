@@ -102,7 +102,8 @@ end
 
 ---Handle inventory action discord logging
 ---@param data table Action data containing action, admin, player, item, report
-RegisterNetEvent("sws-report:discord:inventoryAction", function(data)
+-- Server-internal only: a net event let any client post forged logs to the webhook
+AddEventHandler("sws-report:discord:inventoryAction", function(data)
     if not Config.Discord.enabled then
         return
     end
