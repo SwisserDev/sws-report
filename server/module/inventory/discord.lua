@@ -116,7 +116,7 @@ AddEventHandler("sws-report:discord:inventoryAction", function(data)
         return
     end
 
-    local embed = buildInventoryEmbed(data)
+    local embed = ClampDiscordEmbed(buildInventoryEmbed(data))
 
     local payload = {
         username = Config.Discord.botName or "Report System",

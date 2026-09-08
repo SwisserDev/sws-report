@@ -1,3 +1,55 @@
+-- Discord rejects the whole webhook (HTTP 400) when one of these is exceeded or empty
+local EMBED_LIMITS = {
+    title = 256,
+    description = 4096,
+    fieldName = 256,
+    fieldValue = 1024,
+    footer = 2048
+}
+
+---Cut text to a byte limit without splitting a UTF-8 character
+---@param value any
+---@param max integer
+---@return string
+local function clampText(value, max)
+    local text = tostring(value or "")
+    if #text <= max then return text end
+
+    local cut = max - 3
+    while cut > 0 and ((text:byte(cut + 1) or 0) & 0xC0) == 0x80 do
+        cut = cut - 1
+    end
+
+    return text:sub(1, cut) .. "..."
+end
+
+---Bring an embed within Discord's limits
+---@param embed table
+---@return table
+function ClampDiscordEmbed(embed)
+    if embed.title then
+        embed.title = clampText(embed.title, EMBED_LIMITS.title)
+    end
+
+    if embed.description then
+        embed.description = clampText(embed.description, EMBED_LIMITS.description)
+    end
+
+    if embed.footer and embed.footer.text then
+        embed.footer.text = clampText(embed.footer.text, EMBED_LIMITS.footer)
+    end
+
+    for _, field in ipairs(embed.fields or {}) do
+        field.name = clampText(field.name, EMBED_LIMITS.fieldName)
+        field.value = clampText(field.value, EMBED_LIMITS.fieldValue)
+        if field.value == "" then
+            field.value = "-"
+        end
+    end
+
+    return embed
+end
+
 ---Check if event type is enabled
 ---@param eventType string Event type
 ---@return boolean
@@ -13,6 +65,10 @@ local function sendWebhook(eventType, data)
     if not Config.Discord.enabled then return end
     if not Config.Discord.webhook or Config.Discord.webhook == "" then return end
     if not isEventEnabled(eventType) then return end
+
+    for _, embed in ipairs(data.embeds or {}) do
+        ClampDiscordEmbed(embed)
+    end
 
     PerformHttpRequest(Config.Discord.webhook, function(err, text, headers)
         if err ~= 200 and err ~= 204 then
