@@ -1,32 +1,6 @@
 local MAX_VOICE_DURATION = Config.VoiceMessages.maxDurationSeconds
 local MAX_FILE_SIZE = Config.VoiceMessages.maxFileSizeKB * 1024
 
----Decode base64 string to binary
----@param data string Base64 encoded string
----@return string | nil Binary data
-local function base64Decode(data)
-    local b = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-    data = data:gsub("[^" .. b .. "=]", "")
-
-    local result = data:gsub(".", function(x)
-        if x == "=" then return "" end
-        local r, f = "", (b:find(x) - 1)
-        for i = 6, 1, -1 do
-            r = r .. (f % 2 ^ i - f % 2 ^ (i - 1) > 0 and "1" or "0")
-        end
-        return r
-    end):gsub("%d%d%d?%d?%d?%d?%d?%d?", function(x)
-        if #x ~= 8 then return "" end
-        local c = 0
-        for i = 1, 8 do
-            c = c + (x:sub(i, i) == "1" and 2 ^ (8 - i) or 0)
-        end
-        return string.char(c)
-    end)
-
-    return result
-end
-
 ---Validate audio data
 ---@param audioData string Base64 encoded audio
 ---@param duration number Duration in seconds
@@ -178,7 +152,7 @@ RegisterNetEvent("sws-report:sendVoiceMessage", function(reportId, audioBase64, 
             messageType = MessageType.VOICE,
             audioUrl = cdnUrl,
             audioDuration = audioDuration,
-            createdAt = os.date("%Y-%m-%d %H:%M:%S")
+            createdAt = os.date("!%Y-%m-%dT%H:%M:%SZ")
         }
 
         report:addMessage(messageData)
