@@ -419,12 +419,22 @@ RegisterNetEvent("sws-report:resolveReport", function(reportId)
         return
     end
 
+    local admin = GetPlayerData(source)
+
+    -- Resolving without claiming first still counts for the resolving admin (stats, leaderboard)
+    if not report.data.claimedBy then
+        report.data.claimedBy = admin.identifier
+        report.data.claimedByName = admin.name
+    end
+
     report:resolve()
 
     MySQL.update.await([[
-        UPDATE reports SET status = ?, resolved_at = NOW(), updated_at = NOW()
+        UPDATE reports
+        SET status = ?, claimed_by = COALESCE(claimed_by, ?), claimed_by_name = COALESCE(claimed_by_name, ?),
+            resolved_at = NOW(), updated_at = NOW()
         WHERE id = ?
-    ]], { ReportStatus.RESOLVED, reportId })
+    ]], { ReportStatus.RESOLVED, admin.identifier, admin.name, reportId })
 
     broadcastReportUpdate(report, "reportUpdated")
 
@@ -432,7 +442,6 @@ RegisterNetEvent("sws-report:resolveReport", function(reportId)
 
     NotifyPlayer(source, L("report_resolved"), "success")
 
-    local admin = GetPlayerData(source)
     TriggerEvent("sws-report:discord:resolved", report:serialize(), admin)
 
     DebugPrint(("Report #%d resolved by %s"):format(reportId, admin.name))
