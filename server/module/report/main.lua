@@ -636,6 +636,9 @@ exports("CloseReport", function(reportId)
         WHERE id = ?
     ]], { ReportStatus.RESOLVED, reportId })
 
+    broadcastReportUpdate(report, "reportUpdated")
+    TriggerEvent("sws-report:discord:resolved", report:serialize(), { name = GetInvokingResource() or "API" })
+
     Reports[reportId] = nil
     return true
 end)
