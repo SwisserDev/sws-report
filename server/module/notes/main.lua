@@ -81,14 +81,9 @@ RegisterNetEvent("sws-report:addReportNote", function(reportId, note)
         return
     end
 
-    if type(note) ~= "string" or #note == 0 then
+    local sanitizedNote = SanitizeString(note, MAX_NOTE_LENGTH, true)
+    if sanitizedNote == "" then
         NotifyPlayer(source, L("error_note_empty"), "error")
-        return
-    end
-
-    local sanitizedNote = SanitizeString(note, MAX_NOTE_LENGTH)
-    if #sanitizedNote > MAX_NOTE_LENGTH then
-        NotifyPlayer(source, L("error_note_too_long", MAX_NOTE_LENGTH), "error")
         return
     end
 
@@ -190,14 +185,9 @@ RegisterNetEvent("sws-report:addPlayerNote", function(playerId, note)
         return
     end
 
-    if type(note) ~= "string" or #note == 0 then
+    local sanitizedNote = SanitizeString(note, MAX_NOTE_LENGTH, true)
+    if sanitizedNote == "" then
         NotifyPlayer(source, L("error_note_empty"), "error")
-        return
-    end
-
-    local sanitizedNote = SanitizeString(note, MAX_NOTE_LENGTH)
-    if #sanitizedNote > MAX_NOTE_LENGTH then
-        NotifyPlayer(source, L("error_note_too_long", MAX_NOTE_LENGTH), "error")
         return
     end
 

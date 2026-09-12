@@ -64,12 +64,11 @@ RegisterNetEvent("sws-report:sendMessage", function(reportId, message)
         return
     end
 
-    if not message or message == "" then
+    message = SanitizeString(message, MAX_MESSAGE_LENGTH)
+    if message == "" then
         NotifyPlayer(source, L("error_message_empty"), "error")
         return
     end
-
-    message = SanitizeString(message, MAX_MESSAGE_LENGTH)
 
     local senderType = canSendAsAdmin and SenderType.ADMIN or SenderType.PLAYER
 

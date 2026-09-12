@@ -219,19 +219,14 @@ RegisterNetEvent("sws-report:createReport", function(data)
         return
     end
 
-    if type(data.subject) ~= "string" or data.subject == "" then
+    local subject = SanitizeString(data.subject, MAX_SUBJECT_LENGTH)
+    if subject == "" then
         NotifyPlayer(source, L("error_subject_required"), "error")
         return
     end
 
     if type(data.category) ~= "string" then
         NotifyPlayer(source, L("error_invalid_category"), "error")
-        return
-    end
-
-    local subject = SanitizeString(data.subject, MAX_SUBJECT_LENGTH)
-    if #subject > MAX_SUBJECT_LENGTH then
-        NotifyPlayer(source, L("error_subject_too_long", MAX_SUBJECT_LENGTH), "error")
         return
     end
 
@@ -245,8 +240,9 @@ RegisterNetEvent("sws-report:createReport", function(data)
         if type(data.description) ~= "string" then
             return
         end
-        if data.description ~= "" then
-            description = SanitizeString(data.description, MAX_DESCRIPTION_LENGTH)
+        description = SanitizeString(data.description, MAX_DESCRIPTION_LENGTH, true)
+        if description == "" then
+            description = nil
         end
     end
 

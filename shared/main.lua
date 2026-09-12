@@ -94,18 +94,43 @@ function GenerateUUID()
     end)
 end
 
----Sanitize string for database
----@param str string Input string
----@param maxLength? integer Maximum length (default 255)
+---Cut a string to a number of characters without splitting UTF-8 sequences
+---@param str string
+---@param maxChars integer
 ---@return string
-function SanitizeString(str, maxLength)
+local function truncateUtf8(str, maxChars)
+    local ok, cut = pcall(utf8.offset, str, maxChars + 1)
+    if ok then
+        return cut and str:sub(1, cut - 1) or str
+    end
+
+    -- Invalid UTF-8, fall back to a byte cut that doesn't end inside a sequence
+    cut = math.min(#str, maxChars)
+    while cut > 0 and ((str:byte(cut + 1) or 0) & 0xC0) == 0x80 do
+        cut = cut - 1
+    end
+    return str:sub(1, cut)
+end
+
+---Sanitize user input for storage
+---@param str string Input string
+---@param maxLength? integer Maximum length in characters (default 255)
+---@param allowNewlines? boolean Keep line breaks (descriptions, notes)
+---@return string
+function SanitizeString(str, maxLength, allowNewlines)
     if type(str) ~= "string" then return "" end
 
-    maxLength = maxLength or 255
-    str = str:sub(1, maxLength)
-    str = str:gsub("[\r\n]", " ")
+    if allowNewlines then
+        str = str:gsub("\r\n?", "\n"):gsub("\n\n\n+", "\n\n")
+    else
+        str = str:gsub("[\r\n]", " ")
+    end
 
-    return str
+    -- Control characters except tab/newline, then trim
+    str = str:gsub("[%z\1-\8\11-\31\127]", "")
+    str = str:match("^%s*(.-)%s*$")
+
+    return truncateUtf8(str, maxLength or 255)
 end
 
 ---Check if a value exists in a table
