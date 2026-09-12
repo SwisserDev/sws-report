@@ -246,11 +246,13 @@ RegisterNetEvent("sws-report:createReport", function(data)
         end
     end
 
+    -- Client coords can be spoofed. Without OneSync the server only sees 0,0,0,
+    -- then the client value is all we have.
     local coords = nil
-    if data.coords ~= nil then
-        if not IsValidCoords(data.coords) then
-            return
-        end
+    local serverCoords = GetEntityCoords(GetPlayerPed(source))
+    if serverCoords and #serverCoords > 0.0 then
+        coords = SerializeCoords(serverCoords)
+    elseif IsValidCoords(data.coords) then
         coords = SerializeCoords(data.coords)
     end
 
@@ -282,7 +284,7 @@ RegisterNetEvent("sws-report:createReport", function(data)
         description = description,
         status = ReportStatus.OPEN,
         priority = 0,
-        playerCoords = data.coords,
+        playerCoords = DeserializeCoords(coords),
         createdAt = os.date("!%Y-%m-%dT%H:%M:%SZ"),
         updatedAt = os.date("!%Y-%m-%dT%H:%M:%SZ"),
         messages = {}
