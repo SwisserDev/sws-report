@@ -643,7 +643,15 @@ end)
 ---@param priority number Priority value
 ---@return boolean isValid
 local function isValidPriority(priority)
-    return type(priority) == "number" and priority >= 0 and priority <= 3
+    if not IsWholeNumber(priority, 0) then return false end
+
+    for _, configured in ipairs(Config.Priorities) do
+        if configured.id == priority then
+            return true
+        end
+    end
+
+    return false
 end
 
 ---Set report priority

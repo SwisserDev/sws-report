@@ -130,7 +130,7 @@ RegisterNetEvent("sws-report:addInventoryItem", function(reportId, itemName, cou
         return
     end
 
-    if type(count) ~= "number" or count <= 0 then
+    if not IsWholeNumber(count, 1) then
         NotifyPlayer(source, L("error_invalid_count"), "error")
         return
     end
@@ -216,8 +216,13 @@ RegisterNetEvent("sws-report:removeInventoryItem", function(reportId, itemName, 
         return
     end
 
-    if type(count) ~= "number" or count <= 0 then
+    if not IsWholeNumber(count, 1) then
         NotifyPlayer(source, L("error_invalid_count"), "error")
+        return
+    end
+
+    if slot ~= nil and not IsWholeNumber(slot, 1) then
+        NotifyPlayer(source, L("error_invalid_slot"), "error")
         return
     end
 
@@ -301,7 +306,7 @@ RegisterNetEvent("sws-report:setInventoryItemCount", function(reportId, itemName
         return
     end
 
-    if type(count) ~= "number" or count < 0 then
+    if not IsWholeNumber(count, 0) then
         NotifyPlayer(source, L("error_invalid_count"), "error")
         return
     end
@@ -382,7 +387,7 @@ RegisterNetEvent("sws-report:setInventoryItemMetadata", function(reportId, slot,
         return
     end
 
-    if type(slot) ~= "number" or slot < 1 then
+    if not IsWholeNumber(slot, 1) then
         NotifyPlayer(source, L("error_invalid_slot"), "error")
         return
     end
@@ -485,7 +490,7 @@ RegisterNetEvent("sws-report:getInventoryActionLog", function(reportId, limit)
         return
     end
 
-    limit = type(limit) == "number" and limit or 20
+    limit = IsWholeNumber(limit, 1) and math.min(limit, 100) or 20
 
     local logs = MySQL.query.await([[
         SELECT * FROM inventory_changes

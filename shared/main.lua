@@ -167,6 +167,17 @@ end
 -- SECURITY VALIDATION HELPERS
 -- =============================================================================
 
+---Validate a finite whole number, optionally with a lower bound
+---@param value any
+---@param min? number
+---@return boolean
+function IsWholeNumber(value, min)
+    return type(value) == "number"
+        and value > -math.huge and value < math.huge
+        and value == math.floor(value)
+        and value >= (min or -math.huge)
+end
+
 ---Validate reportId (must be positive integer)
 ---@param reportId any
 ---@return boolean
