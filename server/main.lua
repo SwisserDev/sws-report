@@ -639,6 +639,11 @@ AddEventHandler("onResourceStart", function(resourceName)
 
     PrintInfo("Resource started - Loading reports from database...")
 
+    -- The source zip from GitHub has no built UI, the menu then opens invisible
+    if not LoadResourceFile(RESOURCE_NAME, "web/out/index.html") then
+        PrintError("UI build missing (web/out/index.html). Use the release zip from github.com/SwisserDev/sws-report/releases or run 'npm ci && npm run build' in web/")
+    end
+
     resolveAllGroupPermissions()
 
     -- Needs to be known before loading reports, it decides which message columns exist
