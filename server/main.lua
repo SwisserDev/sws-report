@@ -185,7 +185,11 @@ local function resolveAllGroupPermissions()
         resolveGroup(groupName)
     end
 
-    DebugPrint(("Resolved permissions for %d groups"):format(#(function() local n = 0; for _ in pairs(ResolvedGroupPermissions) do n = n + 1 end; return n end and {ResolvedGroupPermissions} or {})))
+    local groupCount = 0
+    for _ in pairs(ResolvedGroupPermissions) do
+        groupCount = groupCount + 1
+    end
+    DebugPrint(("Resolved permissions for %d groups"):format(groupCount))
 end
 
 ---Determine which RBAC group a player belongs to
