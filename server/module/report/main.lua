@@ -302,9 +302,13 @@ RegisterNetEvent("sws-report:createReport", function(data)
     NotifyAdmins(L("new_report_from", player.name), "info", source)
 
     for adminSource, isAdmin in pairs(Admins) do
-        if isAdmin and adminSource ~= source then
+        if isAdmin then
+            -- Creator too, otherwise an admin's own report is missing from their admin list
             TriggerClientEvent("sws-report:newReport", adminSource, serializedReport)
-            TriggerClientEvent("sws-report:playSound", adminSource, "notification")
+
+            if adminSource ~= source then
+                TriggerClientEvent("sws-report:playSound", adminSource, "notification")
+            end
         end
     end
 

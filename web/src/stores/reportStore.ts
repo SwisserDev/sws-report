@@ -163,11 +163,17 @@ export const useReportStore = create<ReportState>((set, get) => ({
 
   // Report Actions
   addReport: (report) => set((state) => {
+    // An admin's own report arrives as ADD_REPORT and NEW_ADMIN_REPORT, keep a single entry
+    const upsert = (reports: Report[]) =>
+      reports.some((r) => r.id === report.id)
+        ? reports.map((r) => (r.id === report.id ? { ...r, ...report } : r))
+        : [report, ...reports]
+
     const isOwn = state.playerData?.identifier === report.playerId
 
     return {
-      myReports: isOwn ? [report, ...state.myReports] : state.myReports,
-      allReports: state.playerData?.isAdmin ? [report, ...state.allReports] : state.allReports
+      myReports: isOwn ? upsert(state.myReports) : state.myReports,
+      allReports: state.playerData?.isAdmin ? upsert(state.allReports) : state.allReports
     }
   }),
 
@@ -187,9 +193,10 @@ export const useReportStore = create<ReportState>((set, get) => ({
   })),
 
   addMessage: (message) => set((state) => {
+    // A fetch (SET_MESSAGES) can already contain a message that is broadcast right after
     const updateMessages = (reports: Report[]) =>
       reports.map((r) =>
-        r.id === message.reportId
+        r.id === message.reportId && !(r.messages || []).some((m) => m.id === message.id)
           ? { ...r, messages: [...(r.messages || []), message] }
           : r
       )

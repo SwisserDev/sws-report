@@ -28,6 +28,19 @@ local myReports = {}
 ---@type ReportData[] All reports (admin only)
 local allReports = {}
 
+---Insert a report at the top or replace the existing entry with the same id
+---@param list ReportData[]
+---@param report ReportData
+local function upsertReport(list, report)
+    for i, r in ipairs(list) do
+        if r.id == report.id then
+            list[i] = report
+            return
+        end
+    end
+    table.insert(list, 1, report)
+end
+
 ---Open the report UI
 ---@param forceAdmin? boolean Force admin mode
 local function openUI(forceAdmin)
@@ -312,7 +325,7 @@ RegisterNetEvent("sws-report:setAllReports", function(reports)
 end)
 
 RegisterNetEvent("sws-report:reportCreated", function(report)
-    table.insert(myReports, 1, report)
+    upsertReport(myReports, report)
 
     if isUIOpen then
         SendNUIMessage({
@@ -323,7 +336,7 @@ RegisterNetEvent("sws-report:reportCreated", function(report)
 end)
 
 RegisterNetEvent("sws-report:newReport", function(report)
-    table.insert(allReports, 1, report)
+    upsertReport(allReports, report)
 
     if isUIOpen and isAdmin then
         SendNUIMessage({
