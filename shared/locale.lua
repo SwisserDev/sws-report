@@ -4,6 +4,9 @@ Locales = {}
 ---@type table<string, string>
 CurrentLocale = {}
 
+---@type table<string, string> Current locale with English fallbacks, sent to the UI
+UILocale = {}
+
 ---Load a locale file
 ---@param locale string Locale code (e.g., "en", "de")
 local function loadLocale(locale)
@@ -41,6 +44,15 @@ function InitLocale()
     end
 
     CurrentLocale = Locales[defaultLocale] or Locales["en"] or {}
+
+    -- Partial translations (e.g. ja) would otherwise show hardcoded English defaults in the UI
+    UILocale = {}
+    for key, value in pairs(Locales["en"] or {}) do
+        UILocale[key] = value
+    end
+    for key, value in pairs(CurrentLocale) do
+        UILocale[key] = value
+    end
 
     if Config.Debug then
         print(("^2[sws-report] Locale initialized: %s^0"):format(defaultLocale))

@@ -52,7 +52,7 @@ local function openUI(forceAdmin)
                 permissions = playerPermissions,
                 group = playerGroup
             },
-            locale = CurrentLocale,
+            locale = UILocale,
             voiceMessagesEnabled = voiceMessagesEnabled
         }
     })
