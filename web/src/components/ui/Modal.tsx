@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, type ReactNode } from "react"
+import type { ReactNode } from "react"
 import { Button } from "./Button"
+import { useEscapeLayer } from "@/hooks/useEscapeLayer"
 
 interface ModalProps {
   isOpen: boolean
@@ -12,16 +13,7 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) {
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
-        onClose()
-      }
-    }
-
-    document.addEventListener("keydown", handleEscape)
-    return () => document.removeEventListener("keydown", handleEscape)
-  }, [isOpen, onClose])
+  useEscapeLayer(onClose, isOpen)
 
   if (!isOpen) return null
 

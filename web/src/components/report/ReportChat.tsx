@@ -9,6 +9,7 @@ import { fetchNui } from "@/lib/nui"
 import { Button, Input } from "@/components/ui"
 import { VoiceRecorder } from "./VoiceRecorder"
 import { AudioPlayer } from "./AudioPlayer"
+import { useEscapeLayer } from "@/hooks/useEscapeLayer"
 import { formatTimestamp, cn } from "@/lib/utils"
 
 interface ReportChatProps {
@@ -22,6 +23,8 @@ export function ReportChat({ report }: ReportChatProps) {
   const [message, setMessage] = useState("")
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  useEscapeLayer(() => setSelectedImage(null), selectedImage !== null)
 
   const messages = report.messages || []
   const messagesLength = messages.length

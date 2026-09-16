@@ -5,6 +5,7 @@ import { useReportStore } from "@/stores/reportStore"
 import { useNuiActions } from "@/hooks/useNui"
 import { Button, Badge } from "@/components/ui"
 import { PriorityBadge } from "@/components/ui/PriorityBadge"
+import { useEscapeLayer } from "@/hooks/useEscapeLayer"
 import { formatRelativeTime, formatTimestamp, truncate } from "@/lib/utils"
 import type { PlayerNote, HistoryReport, PlayerIdentifiers } from "@/types"
 
@@ -37,6 +38,9 @@ function CopyIdentifierModal({
   onClose: () => void
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Opened from the player panel, so it sits one layer above it
+  useEscapeLayer(onClose, true, 2)
 
   useEffect(() => {
     // Auto-select the input content when modal opens
@@ -90,6 +94,8 @@ export function PlayerInfoPanel({ playerId, playerName, onClose }: PlayerInfoPan
 
   const { playerHistory, locale, categories, hasPermission } = useReportStore()
   const { getPlayerHistory, addPlayerNote, deletePlayerNote } = useNuiActions()
+
+  useEscapeLayer(onClose)
 
   useEffect(() => {
     getPlayerHistory(playerId)

@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { useReportStore } from "@/stores/reportStore"
 import { useNuiListener, useNuiActions } from "@/hooks/useNui"
+import { useEscapeLayer } from "@/hooks/useEscapeLayer"
 import { isEnvBrowser } from "@/lib/nui"
 import { Header } from "@/components/layout/Header"
 import { Notifications } from "@/components/layout/Notifications"
@@ -195,16 +196,8 @@ export default function Home() {
     }
   }, [setVisible, setTheme, setPlayerData, setCategories, setLocale, setMyReports, setAllReports, setStatistics])
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isVisible) {
-        close()
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [isVisible, close])
+  // Lowest layer: Escape only closes the whole UI when no overlay is open
+  useEscapeLayer(close, isVisible, 0)
 
   return (
     <div data-theme={theme}>

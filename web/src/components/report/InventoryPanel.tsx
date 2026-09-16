@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import { useReportStore } from "@/stores/reportStore"
 import { useNuiActions } from "@/hooks/useNui"
 import { Button } from "@/components/ui"
+import { useEscapeLayer } from "@/hooks/useEscapeLayer"
 import type { InventoryItem, InventoryItemInfo } from "@/types"
 
 interface InventoryPanelProps {
@@ -29,6 +30,8 @@ function ItemActionModal({ isOpen, onClose, reportId, item, action, itemList }: 
   const [count, setCount] = useState(item?.count || 1)
   const [metadata, setMetadata] = useState(item?.metadata ? JSON.stringify(item.metadata, null, 2) : "{}")
   const [searchTerm, setSearchTerm] = useState("")
+
+  useEscapeLayer(onClose, isOpen)
 
   if (!isOpen) return null
 
