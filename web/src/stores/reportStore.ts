@@ -24,6 +24,7 @@ interface ReportState {
 
   // Feature Flags
   voiceMessagesEnabled: boolean
+  voiceMaxDuration: number
 
   // Data
   playerData: PlayerData | null
@@ -57,6 +58,7 @@ interface ReportState {
   setShowPlayerInfo: (show: boolean) => void
   setSelectedPlayerId: (id: string | null) => void
   setVoiceMessagesEnabled: (enabled: boolean) => void
+  setVoiceMaxDuration: (seconds: number) => void
   setPlayerData: (data: PlayerData) => void
   setMyReports: (reports: Report[]) => void
   setAllReports: (reports: Report[]) => void
@@ -114,6 +116,7 @@ export const useReportStore = create<ReportState>((set, get) => ({
   showPlayerInfo: false,
   selectedPlayerId: null,
   voiceMessagesEnabled: false,
+  voiceMaxDuration: 60,
   playerData: null,
   myReports: [],
   allReports: [],
@@ -140,6 +143,7 @@ export const useReportStore = create<ReportState>((set, get) => ({
   setShowPlayerInfo: (show) => set({ showPlayerInfo: show }),
   setSelectedPlayerId: (id) => set({ selectedPlayerId: id }),
   setVoiceMessagesEnabled: (enabled) => set({ voiceMessagesEnabled: enabled }),
+  setVoiceMaxDuration: (seconds) => set({ voiceMaxDuration: seconds }),
 
   // Data Actions
   setPlayerData: (data) => set((state) => {

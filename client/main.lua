@@ -66,7 +66,8 @@ local function openUI(forceAdmin)
                 group = playerGroup
             },
             locale = UILocale,
-            voiceMessagesEnabled = voiceMessagesEnabled
+            voiceMessagesEnabled = voiceMessagesEnabled,
+            voiceMaxDuration = Config.VoiceMessages.maxDurationSeconds
         }
     })
 

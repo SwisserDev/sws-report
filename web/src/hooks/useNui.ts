@@ -15,6 +15,7 @@ interface ShowUIData {
   playerData: PlayerData
   locale: Record<string, string>
   voiceMessagesEnabled?: boolean
+  voiceMaxDuration?: number
 }
 
 export function useNuiListener() {
@@ -34,6 +35,7 @@ export function useNuiListener() {
           store.setPlayerData(uiData.playerData)
           store.setLocale(uiData.locale || {})
           store.setVoiceMessagesEnabled(uiData.voiceMessagesEnabled ?? false)
+          store.setVoiceMaxDuration(uiData.voiceMaxDuration ?? 60)
           break
         }
 

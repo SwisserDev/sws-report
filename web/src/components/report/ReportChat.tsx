@@ -17,7 +17,7 @@ interface ReportChatProps {
 }
 
 export function ReportChat({ report }: ReportChatProps) {
-  const { locale, voiceMessagesEnabled } = useReportStore()
+  const { locale, voiceMessagesEnabled, voiceMaxDuration } = useReportStore()
   const { sendMessage, getMessages, takeScreenshot } = useNuiActions()
 
   const [message, setMessage] = useState("")
@@ -171,7 +171,7 @@ export function ReportChat({ report }: ReportChatProps) {
           {voiceMessagesEnabled && (
             <VoiceRecorder
               onSend={handleVoiceSend}
-              maxDuration={60}
+              maxDuration={voiceMaxDuration}
               locale={locale}
             />
           )}

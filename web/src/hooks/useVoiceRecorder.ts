@@ -38,6 +38,11 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const startTimeRef = useRef<number>(0)
   const pausedDurationRef = useRef<number>(0)
+  const isPausedRef = useRef(false)
+  const cancelledRef = useRef(false)
+
+  const getElapsed = () =>
+    pausedDurationRef.current + (isPausedRef.current ? 0 : (Date.now() - startTimeRef.current) / 1000)
 
   const cleanup = useCallback(() => {
     if (timerRef.current) {
@@ -53,11 +58,13 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
     setDuration(0)
     setIsPaused(false)
     pausedDurationRef.current = 0
+    isPausedRef.current = false
   }, [])
 
   const startRecording = useCallback(async () => {
     setError(null)
     cleanup()
+    cancelledRef.current = false
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -89,9 +96,10 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
 
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(chunksRef.current, { type: mimeType })
-        const finalDuration = pausedDurationRef.current + (Date.now() - startTimeRef.current) / 1000
+        const finalDuration = getElapsed()
 
-        if (onRecordingComplete && audioBlob.size > 0 && chunksRef.current.length > 0) {
+        // stop() still flushes a final chunk after cancel, so a flag is the only reliable signal
+        if (!cancelledRef.current && onRecordingComplete && audioBlob.size > 0 && chunksRef.current.length > 0) {
           onRecordingComplete(audioBlob, Math.min(finalDuration, maxDuration))
         }
 
@@ -112,7 +120,7 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
       setIsRecording(true)
 
       timerRef.current = setInterval(() => {
-        const elapsed = pausedDurationRef.current + (Date.now() - startTimeRef.current) / 1000
+        const elapsed = getElapsed()
         setDuration(elapsed)
 
         if (elapsed >= maxDuration) {
@@ -140,6 +148,7 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
       mediaRecorderRef.current.pause()
       setIsPaused(true)
       pausedDurationRef.current += (Date.now() - startTimeRef.current) / 1000
+      isPausedRef.current = true
       if (timerRef.current) {
         clearInterval(timerRef.current)
         timerRef.current = null
@@ -152,9 +161,10 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
       mediaRecorderRef.current.resume()
       setIsPaused(false)
       startTimeRef.current = Date.now()
+      isPausedRef.current = false
 
       timerRef.current = setInterval(() => {
-        const elapsed = pausedDurationRef.current + (Date.now() - startTimeRef.current) / 1000
+        const elapsed = getElapsed()
         setDuration(elapsed)
 
         if (elapsed >= maxDuration) {
@@ -167,6 +177,7 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
   }, [maxDuration])
 
   const cancelRecording = useCallback(() => {
+    cancelledRef.current = true
     chunksRef.current = []
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.stop()
