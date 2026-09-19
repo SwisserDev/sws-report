@@ -415,6 +415,9 @@ export const useReportStore = create<ReportState>((set, get) => ({
         ]
       : state.allReports
 
+    // The search box is labelled "player", staff type names or #ids, not license hashes
+    const search = filter.playerId?.trim().toLowerCase().replace(/^#/, "")
+
     return reports.filter((report) => {
       if (filter.status && filter.status !== "all" && report.status !== filter.status) {
         return false
@@ -422,8 +425,11 @@ export const useReportStore = create<ReportState>((set, get) => ({
       if (filter.category && filter.category !== "all" && report.category !== filter.category) {
         return false
       }
-      if (filter.playerId && !report.playerId.includes(filter.playerId)) {
-        return false
+      if (search) {
+        const haystack = [String(report.id), report.playerName, report.playerId, report.subject]
+        if (!haystack.some((value) => value?.toLowerCase().includes(search))) {
+          return false
+        }
       }
       return true
     })
