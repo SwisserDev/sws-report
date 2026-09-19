@@ -30,6 +30,7 @@ interface ReportState {
   playerData: PlayerData | null
   myReports: Report[]
   allReports: Report[]
+  reportArchive: Report[]
   categories: CategoryConfig[]
   priorities: PriorityConfig[]
   locale: Record<string, string>
@@ -62,6 +63,7 @@ interface ReportState {
   setPlayerData: (data: PlayerData) => void
   setMyReports: (reports: Report[]) => void
   setAllReports: (reports: Report[]) => void
+  setReportArchive: (reports: Report[]) => void
   setCategories: (categories: CategoryConfig[]) => void
   setPriorities: (priorities: PriorityConfig[]) => void
   setLocale: (locale: Record<string, string>) => void
@@ -106,6 +108,15 @@ interface ReportState {
   getPlayerNotes: (playerId: string) => PlayerNote[]
 }
 
+type ReportLists = Pick<ReportState, "myReports" | "allReports" | "reportArchive">
+
+// Apply the same change to every list a report can live in
+const mapReportLists = (state: ReportLists, fn: (reports: Report[]) => Report[]): ReportLists => ({
+  myReports: fn(state.myReports),
+  allReports: fn(state.allReports),
+  reportArchive: fn(state.reportArchive)
+})
+
 export const useReportStore = create<ReportState>((set, get) => ({
   // Initial State
   isVisible: false,
@@ -120,6 +131,7 @@ export const useReportStore = create<ReportState>((set, get) => ({
   playerData: null,
   myReports: [],
   allReports: [],
+  reportArchive: [],
   categories: [],
   priorities: [],
   locale: {},
@@ -160,6 +172,7 @@ export const useReportStore = create<ReportState>((set, get) => ({
   }),
   setMyReports: (reports) => set({ myReports: reports }),
   setAllReports: (reports) => set({ allReports: reports }),
+  setReportArchive: (reports) => set({ reportArchive: reports }),
   setCategories: (categories) => set({ categories }),
   setPriorities: (priorities) => set({ priorities }),
   setLocale: (locale) => set({ locale }),
@@ -181,59 +194,39 @@ export const useReportStore = create<ReportState>((set, get) => ({
     }
   }),
 
-  updateReport: (updatedReport) => set((state) => ({
-    myReports: state.myReports.map((r) =>
-      r.id === updatedReport.id ? { ...r, ...updatedReport } : r
-    ),
-    allReports: state.allReports.map((r) =>
-      r.id === updatedReport.id ? { ...r, ...updatedReport } : r
+  updateReport: (updatedReport) => set((state) =>
+    mapReportLists(state, (reports) =>
+      reports.map((r) => (r.id === updatedReport.id ? { ...r, ...updatedReport } : r))
     )
-  })),
+  ),
 
   removeReport: (id) => set((state) => ({
-    myReports: state.myReports.filter((r) => r.id !== id),
-    allReports: state.allReports.filter((r) => r.id !== id),
+    ...mapReportLists(state, (reports) => reports.filter((r) => r.id !== id)),
     selectedReportId: state.selectedReportId === id ? null : state.selectedReportId
   })),
 
-  addMessage: (message) => set((state) => {
+  addMessage: (message) => set((state) =>
     // A fetch (SET_MESSAGES) can already contain a message that is broadcast right after
-    const updateMessages = (reports: Report[]) =>
+    mapReportLists(state, (reports) =>
       reports.map((r) =>
         r.id === message.reportId && !(r.messages || []).some((m) => m.id === message.id)
           ? { ...r, messages: [...(r.messages || []), message] }
           : r
       )
+    )
+  ),
 
-    return {
-      myReports: updateMessages(state.myReports),
-      allReports: updateMessages(state.allReports)
-    }
-  }),
+  setMessages: (reportId, messages) => set((state) =>
+    mapReportLists(state, (reports) =>
+      reports.map((r) => (r.id === reportId ? { ...r, messages } : r))
+    )
+  ),
 
-  setMessages: (reportId, messages) => set((state) => {
-    const updateMessages = (reports: Report[]) =>
-      reports.map((r) =>
-        r.id === reportId ? { ...r, messages } : r
-      )
-
-    return {
-      myReports: updateMessages(state.myReports),
-      allReports: updateMessages(state.allReports)
-    }
-  }),
-
-  updatePlayerOnlineStatus: (playerId, isOnline) => set((state) => {
-    const updateStatus = (reports: Report[]) =>
-      reports.map((r) =>
-        r.playerId === playerId ? { ...r, isPlayerOnline: isOnline } : r
-      )
-
-    return {
-      myReports: updateStatus(state.myReports),
-      allReports: updateStatus(state.allReports)
-    }
-  }),
+  updatePlayerOnlineStatus: (playerId, isOnline) => set((state) =>
+    mapReportLists(state, (reports) =>
+      reports.map((r) => (r.playerId === playerId ? { ...r, isPlayerOnline: isOnline } : r))
+    )
+  ),
 
   // Notification Actions
   addNotification: (notification) => {
@@ -394,20 +387,33 @@ export const useReportStore = create<ReportState>((set, get) => ({
   // Getters
   getSelectedReport: () => {
     const state = get()
-    const reports = state.activeTab === "admin" ? state.allReports : state.myReports
-    return reports.find((r) => r.id === state.selectedReportId)
+
+    if (state.activeTab !== "admin") {
+      return state.myReports.find((r) => r.id === state.selectedReportId)
+    }
+
+    return state.allReports.find((r) => r.id === state.selectedReportId)
+      ?? state.reportArchive.find((r) => r.id === state.selectedReportId)
   },
 
   getFilteredReports: () => {
     const state = get()
-    const reports = state.activeTab === "admin" ? state.allReports : state.myReports
 
     // Only apply filters for admin tab - player tab shows whatever server returns
     if (state.activeTab !== "admin") {
-      return reports
+      return state.myReports
     }
 
     const { filter } = state
+
+    // Resolved reports are not cached server-side, they come from the archive fetch.
+    // Reports resolved during this session are still in allReports.
+    const reports = filter.status === "resolved"
+      ? [
+          ...state.allReports.filter((r) => !state.reportArchive.some((a) => a.id === r.id)),
+          ...state.reportArchive
+        ]
+      : state.allReports
 
     return reports.filter((report) => {
       if (filter.status && filter.status !== "all" && report.status !== filter.status) {

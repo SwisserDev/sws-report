@@ -62,6 +62,10 @@ export function useNuiListener() {
           store.setAllReports(data as Report[])
           break
 
+        case "SET_REPORT_ARCHIVE":
+          store.setReportArchive(data as Report[])
+          break
+
         case "ADD_REPORT":
         case "NEW_ADMIN_REPORT":
           store.addReport(data as Report)
@@ -271,6 +275,10 @@ export function useNuiActions() {
     fetchNui("getMyReports", { includeResolved })
   }, [])
 
+  const getResolvedReports = useCallback(() => {
+    fetchNui("getReports", { filter: { status: "resolved", includeResolved: true } })
+  }, [])
+
   const getStatistics = useCallback(() => {
     fetchNui("getStatistics")
   }, [])
@@ -324,6 +332,7 @@ export function useNuiActions() {
     getPlayerNotes,
     getPlayerHistory,
     getMyReports,
+    getResolvedReports,
     getStatistics,
     takeScreenshot,
     getPlayerInventory,

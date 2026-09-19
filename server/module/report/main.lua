@@ -591,7 +591,8 @@ RegisterNetEvent("sws-report:getReports", function(filter)
         table.insert(reports, reportData)
     end
 
-    TriggerClientEvent("sws-report:setAllReports", source, reports)
+    -- Separate list on the client, must not replace the cached active reports
+    TriggerClientEvent("sws-report:setReportArchive", source, reports)
 end)
 
 

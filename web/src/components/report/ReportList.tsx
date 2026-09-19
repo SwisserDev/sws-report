@@ -8,7 +8,7 @@ import { Button, Select, Input } from "@/components/ui"
 
 export function ReportList() {
   const { isVisible, activeTab, setIsCreatingReport, getFilteredReports, locale, filter, setFilter, categories } = useReportStore()
-  const { getMyReports } = useNuiActions()
+  const { getMyReports, getResolvedReports } = useNuiActions()
   const [showResolved, setShowResolved] = useState(false)
 
   const reports = getFilteredReports()
@@ -20,6 +20,13 @@ export function ReportList() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showResolved, activeTab, isVisible])
+
+  // Resolved reports live only in the database, load them when staff filter for them
+  useEffect(() => {
+    if (isVisible && activeTab === "admin" && filter.status === "resolved") {
+      getResolvedReports()
+    }
+  }, [isVisible, activeTab, filter.status, getResolvedReports])
 
   return (
     <aside className="w-[380px] xl:w-[440px] 2xl:w-[520px] flex flex-col border-r border-border bg-bg-secondary">

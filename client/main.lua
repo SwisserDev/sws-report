@@ -325,6 +325,15 @@ RegisterNetEvent("sws-report:setAllReports", function(reports)
     end
 end)
 
+RegisterNetEvent("sws-report:setReportArchive", function(reports)
+    if isUIOpen and isAdmin then
+        SendNUIMessage({
+            type = "SET_REPORT_ARCHIVE",
+            data = reports
+        })
+    end
+end)
+
 RegisterNetEvent("sws-report:reportCreated", function(report)
     upsertReport(myReports, report)
 
