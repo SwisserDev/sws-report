@@ -86,6 +86,11 @@ RegisterNetEvent("sws-report:sendVoiceMessage", function(reportId, audioBase64, 
         return
     end
 
+    if not Throttle(source, "voice", 3000) then
+        NotifyPlayer(source, L("error_slow_down"), "error")
+        return
+    end
+
     local player = GetPlayerData(source)
     if not player then
         NotifyPlayer(source, L("error_generic"), "error")

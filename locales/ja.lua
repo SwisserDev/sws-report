@@ -138,6 +138,7 @@ return {
     ["error_not_claimed"] = "このレポートは対応中ではありません",
     ["error_cannot_delete"] = "このレポートは削除できません",
     ["error_message_empty"] = "メッセージは空にできません",
+    ["error_slow_down"] = "メッセージの送信が速すぎます",
 
     -- Action Groups
     ["teleport"] = "テレポート",

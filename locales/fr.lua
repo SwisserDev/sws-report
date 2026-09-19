@@ -148,6 +148,7 @@ return {
     ["error_not_claimed"] = "Ce signalement n’est pas pris en charge",
     ["error_cannot_delete"] = "Vous ne pouvez pas supprimer ce signalement",
     ["error_message_empty"] = "Le message ne peut pas être vide",
+    ["error_slow_down"] = "Vous envoyez des messages trop rapidement",
 
     -- Groupes d’actions
     ["teleport"] = "Téléportation",

@@ -43,6 +43,12 @@ RegisterNetEvent("sws-report:sendMessage", function(reportId, message)
         return
     end
 
+    -- Every message hits the database, all admins and possibly Discord
+    if not Throttle(source, "message", 750) then
+        NotifyPlayer(source, L("error_slow_down"), "error")
+        return
+    end
+
     local player = GetPlayerData(source)
 
     if not player then

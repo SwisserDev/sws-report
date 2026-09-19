@@ -72,6 +72,26 @@ function NormalizeTimestamp(value)
     return timestamp
 end
 
+---@type table<string, integer> Last allowed action per "source:key" (GetGameTimer)
+local throttles = {}
+
+---Simple per-player rate limit for spammable events
+---@param source integer Player server ID
+---@param key string Action name
+---@param intervalMs integer Minimum time between two actions
+---@return boolean allowed
+function Throttle(source, key, intervalMs)
+    local id = ("%d:%s"):format(source, key)
+    local now = GetGameTimer()
+
+    if throttles[id] and now - throttles[id] < intervalMs then
+        return false
+    end
+
+    throttles[id] = now
+    return true
+end
+
 ---Get player primary identifier
 ---@param source integer Player server ID
 ---@return string | nil
@@ -553,6 +573,13 @@ AddEventHandler("playerDropped", function(reason)
     Admins[source] = nil
     PlayerGroups[source] = nil
     lastRefresh[source] = nil
+
+    local prefix = ("%d:"):format(source)
+    for id in pairs(throttles) do
+        if id:sub(1, #prefix) == prefix then
+            throttles[id] = nil
+        end
+    end
 end)
 
 ---Compare semantic versions

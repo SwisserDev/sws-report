@@ -148,6 +148,7 @@ return {
     ["error_not_claimed"] = "This report is not claimed",
     ["error_cannot_delete"] = "You cannot delete this report",
     ["error_message_empty"] = "Message cannot be empty",
+    ["error_slow_down"] = "You're sending messages too fast",
 
     -- Action Groups
     ["teleport"] = "Teleport",
