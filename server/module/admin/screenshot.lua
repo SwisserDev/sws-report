@@ -27,7 +27,8 @@ local function uploadToDiscord(base64Data, playerName, reportId, callback)
         playerName = playerName,
         reportId = reportId,
         botName = Config.Discord.botName,
-        botAvatar = Config.Discord.botAvatar
+        botAvatar = Config.Discord.botAvatar,
+        debug = Config.Debug
     }, function(success, url, errorMsg)
         callback(success, url, errorMsg)
     end)

@@ -7,13 +7,15 @@
      * Uses multipart/form-data for binary file upload (Lua can't handle this)
      */
     function uploadScreenshotToDiscord(params, callback) {
-        const { webhookUrl, base64Image, playerName, reportId, botName, botAvatar } = params;
+        const { webhookUrl, base64Image, playerName, reportId, botName, botAvatar, debug } = params;
+        // Only chatty with Config.Debug, every screenshot used to print six lines
+        const log = debug ? console.log : () => {};
 
-        console.log(`[sws-report:debug] uploadScreenshotToDiscord called for ${playerName}, report #${reportId}`);
-        console.log(`[sws-report:debug] Image data length: ${base64Image?.length || 0}`);
+        log(`[sws-report:debug] uploadScreenshotToDiscord called for ${playerName}, report #${reportId}`);
+        log(`[sws-report:debug] Image data length: ${base64Image?.length || 0}`);
 
         if (!webhookUrl || !base64Image) {
-            console.log('[sws-report:debug] Missing webhook or image data');
+            log('[sws-report:debug] Missing webhook or image data');
             callback(false, null, 'Missing webhook URL or image data');
             return;
         }
@@ -32,7 +34,7 @@
             }
         }
 
-        console.log(`[sws-report:debug] Image format: ${contentType}, data length after strip: ${base64Data.length}`);
+        log(`[sws-report:debug] Image format: ${contentType}, data length after strip: ${base64Data.length}`);
 
         const imageBuffer = Buffer.from(base64Data, 'base64');
         const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2);
@@ -85,13 +87,13 @@
             }
         };
 
-        console.log(`[sws-report:debug] Sending request to Discord...`);
+        log(`[sws-report:debug] Sending request to Discord...`);
 
         const req = https.request(options, (res) => {
             let data = '';
             res.on('data', chunk => data += chunk);
             res.on('end', () => {
-                console.log(`[sws-report:debug] Discord response status: ${res.statusCode}`);
+                log(`[sws-report:debug] Discord response status: ${res.statusCode}`);
 
                 if (res.statusCode === 200) {
                     try {
@@ -100,21 +102,21 @@
                         const imageUrl = response.embeds?.[0]?.image?.url
                                       || response.attachments?.[0]?.url
                                       || null;
-                        console.log(`[sws-report:debug] Screenshot URL: ${imageUrl}`);
+                        log(`[sws-report:debug] Screenshot URL: ${imageUrl}`);
                         callback(true, imageUrl, null);
                     } catch (e) {
-                        console.log(`[sws-report:debug] Failed to parse response: ${e.message}`);
+                        log(`[sws-report:debug] Failed to parse response: ${e.message}`);
                         callback(false, null, 'Failed to parse Discord response');
                     }
                 } else {
-                    console.log(`[sws-report:debug] Discord error response: ${data}`);
+                    log(`[sws-report:debug] Discord error response: ${data}`);
                     callback(false, null, `Discord returned status ${res.statusCode}`);
                 }
             });
         });
 
         req.on('error', (e) => {
-            console.log(`[sws-report:debug] Request error: ${e.message}`);
+            log(`[sws-report:debug] Request error: ${e.message}`);
             callback(false, null, e.message);
         });
         req.write(fullBody);
