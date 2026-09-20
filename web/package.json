@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sync-mock-locales": "node scripts/sync-mock-locales.mjs"
   },
   "dependencies": {
     "next": "16.0.8",

@@ -21,7 +21,8 @@ export const fetchNui = async <T = unknown>(
   data?: Record<string, unknown>
 ): Promise<T> => {
   if (isEnvBrowser()) {
-    console.log(`[NUI] ${eventName}`, data)
+    // Separate chunk, only fetched when running outside FiveM
+    import("./mock/backend").then((mock) => mock.handleMockNui(eventName, data))
     return {} as T
   }
 
