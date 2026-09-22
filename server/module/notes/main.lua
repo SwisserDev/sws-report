@@ -87,10 +87,13 @@ RegisterNetEvent("sws-report:addReportNote", function(reportId, note)
         return
     end
 
-    local report = Reports[reportId]
-    if not report then
-        NotifyPlayer(source, L("error_not_found"), "error")
-        return
+    -- Resolved reports are not cached, notes on them are still useful afterwards
+    if not Reports[reportId] then
+        local exists = MySQL.scalar.await("SELECT 1 FROM reports WHERE id = ?", { reportId })
+        if not exists then
+            NotifyPlayer(source, L("error_not_found"), "error")
+            return
+        end
     end
 
     local admin = GetPlayerData(source)
