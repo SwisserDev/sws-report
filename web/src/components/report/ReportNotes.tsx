@@ -1,119 +1,89 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useReportStore } from "@/stores/reportStore"
 import { useNuiActions } from "@/hooks/useNui"
-import { Button } from "@/components/ui"
-import { formatRelativeTime } from "@/lib/utils"
+import { Button, EmptyState, NoteCard } from "@/components/ui"
 import type { ReportNote } from "@/types"
 
-interface ReportNotesProps {
-  reportId: number
-}
-
-export function ReportNotes({ reportId }: ReportNotesProps) {
+export function ReportNotes({ reportId }: { reportId: number }) {
   const [newNote, setNewNote] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const { getReportNotes, locale, hasPermission } = useReportStore()
+  const { getReportNotes, locale, hasPermission, language } = useReportStore()
   const { addReportNote, deleteReportNote, getReportNotes: fetchNotes } = useNuiActions()
 
   const notes = getReportNotes(reportId)
+  const canManage = hasPermission("manage_notes")
 
   useEffect(() => {
     fetchNotes(reportId)
   }, [reportId, fetchNotes])
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newNote.trim() || isSubmitting) return
+  const submit = () => {
+    const text = newNote.trim()
+    if (!text) return
 
-    const noteText = newNote.trim()
-    setIsSubmitting(true)
-    setNewNote("")
-
-    const optimisticNote: ReportNote = {
+    useReportStore.getState().addReportNote({
       id: -Date.now(),
       reportId,
       adminId: "pending",
-      adminName: "You",
-      note: noteText,
+      adminName: locale.you || "You",
+      note: text,
       createdAt: new Date().toISOString()
-    }
-
-    useReportStore.getState().addReportNote(optimisticNote)
-    addReportNote(reportId, noteText)
-    setTimeout(() => setIsSubmitting(false), 500)
+    })
+    addReportNote(reportId, text)
+    setNewNote("")
   }
 
-  const handleDelete = (noteId: number) => {
+  const remove = (noteId: number) => {
     useReportStore.getState().removeReportNote(reportId, noteId)
     deleteReportNote(noteId)
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-border">
-        <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
-          <svg className="w-4 h-4 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-          {locale.admin_notes || "Admin Notes"}
-          <span className="text-xs text-text-tertiary font-normal">({locale.internal_only || "internal only"})</span>
-        </h3>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+    <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4">
         {notes.length === 0 ? (
-          <p className="text-sm text-text-tertiary text-center py-4">
-            {locale.no_notes || "No notes yet"}
-          </p>
+          <EmptyState
+            icon="note"
+            title={locale.no_notes || "No notes yet"}
+            hint={locale.notes_hint || "Notes are only visible to staff. Use them for context the next person needs."}
+          />
         ) : (
-          notes.map((note: ReportNote) => (
-            <div key={note.id} className="p-3 bg-bg-tertiary rounded-lg group">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <span className="text-xs font-medium text-accent">{note.adminName}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] xl:text-xs text-text-tertiary">{formatRelativeTime(note.createdAt)}</span>
-                  {hasPermission("manage_notes") && <button
-                    onClick={() => handleDelete(note.id)}
-                    className="opacity-0 group-hover:opacity-100 text-text-tertiary hover:text-red-400 transition-all"
-                    title={locale.delete || "Delete"}
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>}
-                </div>
-              </div>
-              <p className="text-sm text-text-secondary whitespace-pre-wrap">{note.note}</p>
-            </div>
-          ))
+          <div className="flex flex-col gap-2.5">
+            {notes.map((note: ReportNote) => (
+              <NoteCard
+                key={note.id}
+                author={note.adminName}
+                text={note.note}
+                createdAt={note.createdAt}
+                language={language}
+                pending={note.id < 0}
+                onDelete={canManage && note.id > 0 ? () => remove(note.id) : undefined}
+                deleteLabel={locale.delete || "Delete"}
+              />
+            ))}
+          </div>
         )}
       </div>
 
-      {hasPermission("manage_notes") && (
-        <form onSubmit={handleSubmit} className="p-4 border-t border-border">
-          <div className="flex gap-2">
-            <textarea
-              value={newNote}
-              onChange={(e) => setNewNote(e.target.value)}
-              placeholder={locale.add_note_placeholder || "Add a note..."}
-              className="flex-1 px-3 py-2 text-sm bg-bg-tertiary border border-border rounded-lg resize-none focus:outline-none focus:border-accent text-text-primary placeholder:text-text-tertiary"
-              rows={2}
-              maxLength={1000}
-            />
-            <Button
-              type="submit"
-              size="sm"
-              variant="primary"
-              disabled={!newNote.trim() || isSubmitting}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </Button>
-          </div>
-        </form>
+      {canManage && (
+        // Amber like the notes themselves, so nobody mistakes this for the player chat
+        <div className="flex items-end gap-2 px-4 py-3 border-t border-amber-line bg-amber-soft shrink-0">
+          <textarea
+            value={newNote}
+            rows={2}
+            maxLength={1000}
+            onChange={(event) => setNewNote(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) submit()
+            }}
+            placeholder={locale.add_note_placeholder || "Only staff can see this note..."}
+            className="flex-1 min-w-0 px-3 py-2 rounded-md border border-amber-line bg-panel text-base text-fg placeholder:text-fg-faint resize-none focus:outline-none focus:border-amber"
+          />
+          <Button variant="secondary" icon="note" onClick={submit} disabled={!newNote.trim()} className="h-10">
+            {locale.add_note || "Add note"}
+          </Button>
+        </div>
       )}
     </div>
   )

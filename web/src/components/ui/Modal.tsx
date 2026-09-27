@@ -1,49 +1,58 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { Button } from "./Button"
+import { cn } from "@/lib/utils"
 import { useEscapeLayer } from "@/hooks/useEscapeLayer"
+import { IconButton } from "./Button"
 
 interface ModalProps {
   isOpen: boolean
   onClose: () => void
-  title: string
+  title: ReactNode
+  /** Small line under the title */
+  description?: ReactNode
   children: ReactNode
   footer?: ReactNode
+  size?: "sm" | "md" | "lg" | "xl"
+  /** Escape priority, raise it for dialogs opened from another overlay */
+  layer?: number
 }
 
-export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) {
-  useEscapeLayer(onClose, isOpen)
+const SIZES = {
+  sm: "w-[26rem]",
+  md: "w-[34rem]",
+  lg: "w-[46rem]",
+  xl: "w-[64rem]"
+}
+
+export function Modal({ isOpen, onClose, title, description, children, footer, size = "md", layer = 1 }: ModalProps) {
+  useEscapeLayer(onClose, isOpen, layer)
 
   if (!isOpen) return null
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-scrim anim-fade" onMouseDown={onClose}>
       <div
-        className="w-full max-w-lg xl:max-w-2xl 2xl:max-w-3xl max-h-[90vh] flex flex-col bg-bg-secondary border border-border rounded-xl shadow-lg animate-[scale-in_0.2s_ease-out]"
-        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        className={cn(
+          "max-w-[94vw] max-h-[88vh] flex flex-col rounded-lg border border-line-strong bg-panel shadow-[var(--shadow-window)] anim-window",
+          SIZES[size]
+        )}
+        onMouseDown={(event) => event.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </Button>
+        <div className="flex items-start justify-between gap-4 px-5 pt-4 pb-3">
+          <div className="min-w-0">
+            <h3 className="text-md font-semibold text-fg">{title}</h3>
+            {description && <p className="mt-0.5 text-sm text-fg-subtle">{description}</p>}
+          </div>
+          <IconButton icon="close" label="Close" size="sm" onClick={onClose} className="-mr-1.5 -mt-0.5" />
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          {children}
-        </div>
+        <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-1 pb-4">{children}</div>
 
-        {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
+          <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-line bg-canvas rounded-b-lg">
             {footer}
           </div>
         )}

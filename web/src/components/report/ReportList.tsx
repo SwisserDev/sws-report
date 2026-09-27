@@ -1,116 +1,177 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { useReportStore } from "@/stores/reportStore"
 import { useNuiActions } from "@/hooks/useNui"
-import { ReportCard } from "./ReportCard"
-import { Button, Select, Input } from "@/components/ui"
+import { useNow } from "@/hooks/useNow"
+import { Button, EmptyState, Input, Segmented, Select, StatusGlyph } from "@/components/ui"
+import { parseTimestamp } from "@/lib/time"
+import type { Report, ReportStatus } from "@/types"
+import { ReportRow } from "./ReportRow"
+
+interface Group {
+  key: string
+  label: string
+  status?: ReportStatus
+  reports: Report[]
+}
+
+const time = (value: unknown) => parseTimestamp(value)?.getTime() ?? 0
+
+// Most urgent first, then whoever has been waiting longest
+const byPriorityThenAge = (a: Report, b: Report) => b.priority - a.priority || time(a.createdAt) - time(b.createdAt)
+const byNewest = (a: Report, b: Report) => time(b.resolvedAt ?? b.createdAt) - time(a.resolvedAt ?? a.createdAt)
 
 export function ReportList() {
-  const { isVisible, activeTab, setIsCreatingReport, getFilteredReports, locale, filter, setFilter, categories } = useReportStore()
+  const {
+    isVisible, activeTab, locale, filter, setFilter, myView, setMyView, categories,
+    playerData, allReports, myReports, reportArchive, setIsCreatingReport, getFilteredReports
+  } = useReportStore()
   const { getMyReports, getResolvedReports } = useNuiActions()
-  const [showResolved, setShowResolved] = useState(false)
 
+  // Keeps ages and their warning colors current while the list is open
+  useNow(30_000)
+
+  const isAdminTab = activeTab === "admin"
   const reports = getFilteredReports()
 
   // Refetch on open as well, the cached list from Lua can be stale
   useEffect(() => {
     if (isVisible && activeTab === "my-reports") {
-      getMyReports(showResolved)
+      getMyReports(myView === "resolved")
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showResolved, activeTab, isVisible])
+  }, [myView, activeTab, isVisible])
 
-  // Resolved reports live only in the database, load them when staff filter for them
+  // Resolved reports live only in the database, load them when staff open that view
   useEffect(() => {
-    if (isVisible && activeTab === "admin" && filter.status === "resolved") {
+    if (isVisible && isAdminTab && filter.view === "resolved") {
       getResolvedReports()
     }
-  }, [isVisible, activeTab, filter.status, getResolvedReports])
+  }, [isVisible, isAdminTab, filter.view, getResolvedReports])
+
+  const groups = useMemo<Group[]>(() => {
+    if (isAdminTab && filter.view === "queue") {
+      const me = playerData?.identifier
+      return [
+        { key: "unclaimed", label: locale.group_unclaimed || "Unclaimed", status: "open" as const, reports: reports.filter((r) => r.status === "open") },
+        { key: "mine", label: locale.group_mine || "Claimed by me", status: "claimed" as const, reports: reports.filter((r) => r.status === "claimed" && r.claimedBy === me) },
+        { key: "others", label: locale.group_others || "Claimed by others", status: "claimed" as const, reports: reports.filter((r) => r.status === "claimed" && r.claimedBy !== me) }
+      ]
+        .map((group) => ({ ...group, reports: [...group.reports].sort(byPriorityThenAge) }))
+        .filter((group) => group.reports.length > 0)
+    }
+
+    const resolvedView = isAdminTab ? filter.view === "resolved" : myView === "resolved"
+    return [{ key: "all", label: "", reports: [...reports].sort(resolvedView ? byNewest : isAdminTab ? byPriorityThenAge : byNewest) }]
+  }, [reports, isAdminTab, filter.view, myView, playerData?.identifier, locale])
+
+  const me = playerData?.identifier
+  const counts = {
+    queue: allReports.filter((r) => r.status !== "resolved").length,
+    mine: allReports.filter((r) => r.status === "claimed" && r.claimedBy === me).length,
+    active: myReports.filter((r) => r.status !== "resolved").length
+  }
+
+  const filtered = isAdminTab && (filter.search.trim() !== "" || filter.category !== "all")
+  const isEmpty = groups.every((group) => group.reports.length === 0)
+  const archiveLoading = isAdminTab && filter.view === "resolved" && reportArchive.length === 0 && reports.length === 0
 
   return (
-    <aside className="w-[380px] xl:w-[440px] 2xl:w-[520px] flex flex-col border-r border-border bg-bg-secondary">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-        <h3 className="text-sm font-semibold text-text-primary">
-          {activeTab === "admin"
-            ? locale.active_reports || "Active Reports"
-            : locale.my_reports || "My Reports"}
-        </h3>
-        {activeTab === "my-reports" && (
-          <Button size="sm" variant="primary" onClick={() => setIsCreatingReport(true)}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            {locale.create_report || "Create"}
-          </Button>
+    <aside className="w-[23.5rem] shrink-0 flex flex-col min-h-0 border-r border-line bg-panel">
+      <div className="flex flex-col gap-2 p-3 border-b border-line">
+        {isAdminTab ? (
+          <>
+            <Segmented
+              value={filter.view}
+              onChange={(view) => setFilter({ view })}
+              options={[
+                { value: "queue", label: locale.view_active || "Active", count: counts.queue },
+                { value: "mine", label: locale.view_mine || "Mine", count: counts.mine },
+                { value: "resolved", label: locale.status_resolved || "Resolved" }
+              ]}
+            />
+            <div className="flex gap-2">
+              <Input
+                icon="search"
+                className="flex-1 min-w-0"
+                placeholder={locale.search_reports || "Name or #ID"}
+                value={filter.search}
+                onChange={(event) => setFilter({ search: event.target.value })}
+              />
+              <Select
+                className="w-[9.75rem] shrink-0"
+                value={filter.category}
+                onChange={(event) => setFilter({ category: event.target.value })}
+                aria-label={locale.filter_by_category || "Filter by category"}
+              >
+                <option value="all">{locale.all_categories || "All categories"}</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {locale[`category_${category.id}`] || category.label}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          </>
+        ) : (
+          <>
+            <Button variant="primary" icon="plus" className="w-full" onClick={() => setIsCreatingReport(true)}>
+              {locale.create_report || "Create Report"}
+            </Button>
+            <Segmented
+              value={myView}
+              onChange={setMyView}
+              options={[
+                { value: "active", label: locale.view_active || "Active", count: counts.active },
+                { value: "resolved", label: locale.status_resolved || "Resolved" }
+              ]}
+            />
+          </>
         )}
       </div>
 
-      {/* Player: Show Resolved Toggle */}
-      {activeTab === "my-reports" && (
-        <div className="flex items-center gap-2 px-4 py-2 border-b border-border">
-          <label className="flex items-center gap-2 cursor-pointer text-xs text-text-secondary hover:text-text-primary transition-colors">
-            <input
-              type="checkbox"
-              checked={showResolved}
-              onChange={(e) => setShowResolved(e.target.checked)}
-              className="w-3.5 h-3.5 rounded border-border bg-bg-tertiary accent-accent cursor-pointer"
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        {isEmpty ? (
+          archiveLoading ? (
+            <EmptyState icon="history" title={locale.loading || "Loading..."} />
+          ) : filtered ? (
+            <EmptyState
+              icon="search"
+              title={locale.no_matching_reports || "No reports match this filter"}
+              action={
+                <Button size="sm" variant="subtle" onClick={() => setFilter({ search: "", category: "all" })}>
+                  {locale.clear_filter || "Clear filter"}
+                </Button>
+              }
             />
-            {locale.show_resolved || "Show resolved"}
-          </label>
-        </div>
-      )}
-
-      {/* Admin Filters */}
-      {activeTab === "admin" && (
-        <div className="flex flex-wrap gap-2 px-3 py-2 border-b border-border">
-          <Select
-            className="flex-1 min-w-[90px] py-1.5 text-xs"
-            value={filter.status || "all"}
-            onChange={(e) => setFilter({ status: e.target.value as "open" | "claimed" | "resolved" | "all" })}
-          >
-            <option value="all">{locale.all || "All"}</option>
-            <option value="open">{locale.status_open || "Open"}</option>
-            <option value="claimed">{locale.status_claimed || "Claimed"}</option>
-            <option value="resolved">{locale.status_resolved || "Resolved"}</option>
-          </Select>
-          <Select
-            className="flex-1 min-w-[90px] py-1.5 text-xs"
-            value={filter.category || "all"}
-            onChange={(e) => setFilter({ category: e.target.value })}
-          >
-            <option value="all">{locale.all || "All"}</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>{cat.label}</option>
-            ))}
-          </Select>
-          <Input
-            className="w-full py-1.5 text-xs"
-            type="text"
-            placeholder={locale.search_by_player || "Search player..."}
-            value={filter.playerId || ""}
-            onChange={(e) => setFilter({ playerId: e.target.value || undefined })}
-          />
-        </div>
-      )}
-
-      {/* Report List */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
-        {reports.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center text-text-tertiary">
-            <svg className="w-12 h-12 mb-3 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-            </svg>
-            <p className="text-sm">
-              {activeTab === "admin"
-                ? locale.no_reports || "No reports found"
-                : locale.no_active_reports || "You have no active reports"}
-            </p>
-          </div>
+          ) : isAdminTab ? (
+            <EmptyState
+              icon="inbox"
+              title={filter.view === "resolved" ? locale.no_reports || "No reports found" : locale.queue_empty || "Nothing waiting"}
+              hint={filter.view === "queue" ? locale.queue_empty_hint || "New reports show up here the moment they are created." : undefined}
+            />
+          ) : (
+            <EmptyState
+              icon="ticket"
+              title={myView === "resolved" ? locale.no_reports || "No reports found" : locale.no_active_reports || "You have no active reports"}
+              hint={myView === "active" ? locale.no_active_reports_hint || "Something wrong? Create a report and staff will get back to you here." : undefined}
+            />
+          )
         ) : (
-          reports.map((report) => (
-            <ReportCard key={report.id} report={report} />
+          groups.map((group) => (
+            <section key={group.key}>
+              {group.label && (
+                <h4 className="sticky top-0 z-10 flex items-center gap-2 h-8 px-3 border-b border-line bg-canvas text-xs font-medium text-fg-muted">
+                  {group.status && <StatusGlyph status={group.status} />}
+                  {group.label}
+                  <span className="text-fg-faint tabular-nums">{group.reports.length}</span>
+                </h4>
+              )}
+              {group.reports.map((report) => (
+                <ReportRow key={report.id} report={report} />
+              ))}
+            </section>
           ))
         )}
       </div>

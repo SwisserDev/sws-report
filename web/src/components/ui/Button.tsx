@@ -2,51 +2,82 @@
 
 import { forwardRef, type ButtonHTMLAttributes } from "react"
 import { cn } from "@/lib/utils"
+import { Icon, type IconName } from "./Icon"
 
-type ButtonVariant = "default" | "primary" | "secondary" | "success" | "danger" | "ghost"
-type ButtonSize = "default" | "sm" | "lg" | "icon"
+type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "subtle"
+type ButtonSize = "sm" | "md"
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
   size?: ButtonSize
+  icon?: IconName
+  /** Colors only the icon, e.g. a red icon on a neutral kick button */
+  iconClassName?: string
 }
 
-const variantStyles: Record<ButtonVariant, string> = {
-  default: "bg-bg-card border-border text-text-primary hover:bg-bg-elevated hover:border-border-hover",
-  primary: "bg-accent text-white border-accent hover:bg-accent-hover",
-  secondary: "bg-bg-tertiary border-border text-text-secondary hover:bg-bg-elevated hover:text-text-primary hover:border-border-hover",
-  success: "bg-success-bg text-success border-success-border hover:bg-success/20",
-  danger: "bg-error-bg text-error border-error-border hover:bg-error/20",
-  ghost: "bg-transparent border-transparent text-text-secondary hover:text-text-primary hover:bg-bg-tertiary"
+const VARIANTS: Record<ButtonVariant, string> = {
+  primary: "bg-accent text-fg-on-accent border-accent hover:bg-accent-hover hover:border-accent-hover",
+  secondary: "bg-raised text-fg border-line-strong hover:bg-hover hover:border-line-focus",
+  ghost: "bg-transparent text-fg-muted border-transparent hover:bg-hover hover:text-fg",
+  subtle: "bg-transparent text-fg-muted border-line-strong hover:bg-hover hover:text-fg",
+  // Solid red only on the final confirmation of something irreversible
+  danger: "bg-red text-white border-red hover:bg-red-fg hover:border-red-fg hover:text-canvas"
 }
 
-const sizeStyles: Record<ButtonSize, string> = {
-  default: "h-10 px-4 text-sm",
-  sm: "h-8 px-3 text-xs",
-  lg: "h-12 px-6 text-base",
-  icon: "h-9 w-9 p-0"
+const SIZES: Record<ButtonSize, string> = {
+  sm: "h-8 px-2.5 gap-1.5 text-sm",
+  md: "h-9 px-3.5 gap-2 text-base"
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "default", size = "default", children, disabled, ...props }, ref) => {
-    return (
-      <button
-        ref={ref}
-        disabled={disabled}
-        className={cn(
-          "inline-flex items-center justify-center gap-2 rounded-md border font-medium transition-all duration-200",
-          "focus:outline-none focus:ring-2 focus:ring-accent/20",
-          "disabled:opacity-50 disabled:cursor-not-allowed",
-          variantStyles[variant],
-          sizeStyles[size],
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </button>
-    )
-  }
+  ({ className, variant = "secondary", size = "md", icon, iconClassName, children, type = "button", ...props }, ref) => (
+    <button
+      ref={ref}
+      type={type}
+      className={cn(
+        "inline-flex items-center justify-center whitespace-nowrap rounded-md border font-medium",
+        "transition-colors duration-100 disabled:opacity-45 disabled:pointer-events-none",
+        VARIANTS[variant],
+        SIZES[size],
+        className
+      )}
+      {...props}
+    >
+      {icon && <Icon name={icon} className={iconClassName} />}
+      {children}
+    </button>
+  )
 )
 
 Button.displayName = "Button"
+
+interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  icon: IconName
+  label: string
+  size?: ButtonSize
+  active?: boolean
+}
+
+/** Icon-only button, the label doubles as tooltip and accessible name */
+export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
+  ({ icon, label, size = "md", active, className, type = "button", ...props }, ref) => (
+    <button
+      ref={ref}
+      type={type}
+      title={label}
+      aria-label={label}
+      className={cn(
+        "inline-flex items-center justify-center rounded-md border border-transparent text-fg-muted",
+        "transition-colors duration-100 hover:bg-hover hover:text-fg disabled:opacity-45 disabled:pointer-events-none",
+        active && "bg-active text-fg",
+        size === "sm" ? "w-8 h-8" : "w-9 h-9",
+        className
+      )}
+      {...props}
+    >
+      <Icon name={icon} className={size === "sm" ? "w-4 h-4" : "w-[1.125rem] h-[1.125rem]"} />
+    </button>
+  )
+)
+
+IconButton.displayName = "IconButton"

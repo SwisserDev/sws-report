@@ -16,6 +16,8 @@ interface ShowUIData {
   locale: Record<string, string>
   voiceMessagesEnabled?: boolean
   voiceMaxDuration?: number
+  language?: string
+  uiScale?: number
 }
 
 export function useNuiListener() {
@@ -36,6 +38,8 @@ export function useNuiListener() {
           store.setLocale(uiData.locale || {})
           store.setVoiceMessagesEnabled(uiData.voiceMessagesEnabled ?? false)
           store.setVoiceMaxDuration(uiData.voiceMaxDuration ?? 60)
+          store.setLanguage(uiData.language ?? "en")
+          store.setUiScale(uiData.uiScale ?? 1)
           break
         }
 
@@ -231,8 +235,8 @@ export function useNuiActions() {
     fetchNui("getMessages", { reportId })
   }, [])
 
-  const adminAction = useCallback((reportId: number, action: string) => {
-    fetchNui("adminAction", { reportId, action })
+  const adminAction = useCallback((reportId: number, action: string, reason?: string) => {
+    fetchNui("adminAction", { reportId, action, reason })
   }, [])
 
   const setTheme = useCallback((theme: string) => {

@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useEffect, useRef, useState } from "react"
+import { Icon, Spinner } from "@/components/ui"
 import { cn } from "@/lib/utils"
 
 interface AudioPlayerProps {
@@ -9,144 +10,114 @@ interface AudioPlayerProps {
   className?: string
 }
 
-/**
- * Audio playback component for voice messages
- */
+const formatTime = (seconds: number) => {
+  if (!Number.isFinite(seconds) || seconds < 0) return "0:00"
+  return `${Math.floor(seconds / 60)}:${Math.floor(seconds % 60).toString().padStart(2, "0")}`
+}
+
+// Fixed pseudo waveform, real peaks would need decoding the whole file in CEF
+const BARS = [5, 9, 6, 12, 8, 14, 10, 7, 12, 6, 9, 13, 8, 5, 10, 12, 7, 9, 6, 11, 8, 5, 9, 7]
+
 export function AudioPlayer({ src, duration: expectedDuration, className }: AudioPlayerProps) {
+  const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(expectedDuration || 0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(false)
 
-  const audioRef = useRef<HTMLAudioElement>(null)
-
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
 
-    const handleLoadedMetadata = () => {
-      if (isFinite(audio.duration) && !isNaN(audio.duration)) {
-        setDuration(audio.duration)
-      }
+    const onMeta = () => {
+      if (Number.isFinite(audio.duration)) setDuration(audio.duration)
       setIsLoading(false)
     }
-
-    const handleTimeUpdate = () => {
-      setCurrentTime(audio.currentTime)
-    }
-
-    const handleEnded = () => {
+    const onTime = () => setCurrentTime(audio.currentTime)
+    const onEnd = () => {
       setIsPlaying(false)
       setCurrentTime(0)
     }
-
-    const handleError = () => {
+    const onError = () => {
       setError(true)
       setIsLoading(false)
     }
+    const onReady = () => setIsLoading(false)
 
-    const handleCanPlay = () => {
-      setIsLoading(false)
-    }
-
-    audio.addEventListener("loadedmetadata", handleLoadedMetadata)
-    audio.addEventListener("timeupdate", handleTimeUpdate)
-    audio.addEventListener("ended", handleEnded)
-    audio.addEventListener("error", handleError)
-    audio.addEventListener("canplay", handleCanPlay)
-
+    audio.addEventListener("loadedmetadata", onMeta)
+    audio.addEventListener("timeupdate", onTime)
+    audio.addEventListener("ended", onEnd)
+    audio.addEventListener("error", onError)
+    audio.addEventListener("canplay", onReady)
     return () => {
-      audio.removeEventListener("loadedmetadata", handleLoadedMetadata)
-      audio.removeEventListener("timeupdate", handleTimeUpdate)
-      audio.removeEventListener("ended", handleEnded)
-      audio.removeEventListener("error", handleError)
-      audio.removeEventListener("canplay", handleCanPlay)
+      audio.removeEventListener("loadedmetadata", onMeta)
+      audio.removeEventListener("timeupdate", onTime)
+      audio.removeEventListener("ended", onEnd)
+      audio.removeEventListener("error", onError)
+      audio.removeEventListener("canplay", onReady)
     }
   }, [])
 
-  const togglePlay = () => {
+  const toggle = () => {
     const audio = audioRef.current
     if (!audio) return
 
     if (isPlaying) {
       audio.pause()
-    } else {
-      audio.play()
+      setIsPlaying(false)
+      return
     }
-    setIsPlaying(!isPlaying)
+
+    // Only flip the state once playback really started (expired Discord links reject here)
+    audio.play().then(() => setIsPlaying(true)).catch(() => setError(true))
   }
 
-  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+  const seek = (event: React.MouseEvent<HTMLDivElement>) => {
     const audio = audioRef.current
     if (!audio || !duration) return
-
-    const rect = e.currentTarget.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const percentage = x / rect.width
-    audio.currentTime = percentage * duration
-  }
-
-  const formatTime = (seconds: number): string => {
-    if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) {
-      return "0:00"
-    }
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-    return `${mins}:${secs.toString().padStart(2, "0")}`
+    const rect = event.currentTarget.getBoundingClientRect()
+    audio.currentTime = ((event.clientX - rect.left) / rect.width) * duration
   }
 
   if (error) {
     return (
-      <div className={cn("flex items-center gap-2 text-error text-xs", className)}>
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span>Failed to load audio</span>
-      </div>
+      <span className={cn("inline-flex items-center gap-1.5 text-sm text-red-fg", className)}>
+        <Icon name="warning" className="w-3.5 h-3.5" />
+        Audio unavailable
+      </span>
     )
   }
 
+  const progress = duration ? currentTime / duration : 0
+
   return (
-    <div className={cn("flex items-center gap-2 p-2 bg-bg-elevated/50 rounded-lg min-w-[160px]", className)}>
+    <div className={cn("flex items-center gap-2.5 min-w-[15rem]", className)}>
       <audio ref={audioRef} src={src} preload="metadata" />
 
       <button
-        onClick={togglePlay}
+        type="button"
+        onClick={toggle}
         disabled={isLoading}
-        className="w-8 h-8 flex items-center justify-center rounded-full bg-accent text-white hover:bg-accent-hover transition-colors disabled:opacity-50 flex-shrink-0"
+        className="flex items-center justify-center w-8 h-8 rounded-full bg-accent text-fg-on-accent hover:bg-accent-hover disabled:opacity-60 shrink-0"
+        aria-label={isPlaying ? "Pause" : "Play"}
       >
-        {isLoading ? (
-          <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-        ) : isPlaying ? (
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-          </svg>
-        ) : (
-          <svg className="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M8 5v14l11-7z" />
-          </svg>
-        )}
+        {isLoading ? <Spinner className="w-3.5 h-3.5" /> : <Icon name={isPlaying ? "pause" : "play"} className="w-3.5 h-3.5" strokeWidth={2.5} />}
       </button>
 
-      <div className="flex-1 flex flex-col gap-1 min-w-0">
-        <div
-          className="h-1.5 bg-bg-tertiary rounded-full cursor-pointer overflow-hidden"
-          onClick={handleSeek}
-        >
-          <div
-            className="h-full bg-accent rounded-full transition-all"
-            style={{ width: duration ? `${(currentTime / duration) * 100}%` : "0%" }}
+      <div className="flex-1 flex items-center gap-[0.1875rem] h-8 cursor-pointer" onClick={seek}>
+        {BARS.map((height, index) => (
+          <span
+            key={index}
+            className={cn("flex-1 rounded-full", index / BARS.length < progress ? "bg-accent-fg" : "bg-line-focus")}
+            style={{ height: `${height / 16}rem` }}
           />
-        </div>
-        <div className="flex justify-between text-[10px] text-text-muted font-mono">
-          <span>{formatTime(currentTime)}</span>
-          <span>{formatTime(duration || expectedDuration || 0)}</span>
-        </div>
+        ))}
       </div>
+
+      <span className="text-xs tabular-nums text-fg-subtle shrink-0">
+        {formatTime(isPlaying || currentTime > 0 ? currentTime : duration || expectedDuration || 0)}
+      </span>
     </div>
   )
 }

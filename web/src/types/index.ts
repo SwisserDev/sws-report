@@ -80,11 +80,14 @@ export interface CreateReportData {
   description?: string
 }
 
+/** Staff list: queue = everything active, mine = claimed by me, resolved = archive from the database */
+export type AdminView = "queue" | "mine" | "resolved"
+export type PlayerView = "active" | "resolved"
+
 export interface ReportFilter {
-  status?: ReportStatus | "all"
-  category?: string | "all"
-  playerId?: string
-  includeResolved?: boolean
+  view: AdminView
+  category: string
+  search: string
 }
 
 export interface ReportNote {

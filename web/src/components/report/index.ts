@@ -1,4 +1,3 @@
-export { ReportCard } from "./ReportCard"
 export { ReportList } from "./ReportList"
 export { ReportCreate } from "./ReportCreate"
 export { ReportChat } from "./ReportChat"

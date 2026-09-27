@@ -67,7 +67,9 @@ local function openUI(forceAdmin)
             },
             locale = UILocale,
             voiceMessagesEnabled = voiceMessagesEnabled,
-            voiceMaxDuration = Config.VoiceMessages.maxDurationSeconds
+            voiceMaxDuration = Config.VoiceMessages.maxDurationSeconds,
+            language = Config.Locale,
+            uiScale = Config.UI.scale or 1.0
         }
     })
 

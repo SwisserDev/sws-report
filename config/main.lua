@@ -49,6 +49,7 @@
 ---@class UIConfig
 ---@field defaultTheme "dark" | "light" Default theme
 ---@field position string UI position
+---@field scale number UI size multiplier
 
 ---@class VoiceMessageConfig
 ---@field enabled boolean Enable voice messages in chat
@@ -227,7 +228,9 @@ Config.Screenshot = {
 -- UI Settings
 Config.UI = {
     defaultTheme = "dark",
-    position = "center"
+    position = "center",
+    -- Size multiplier on top of the automatic resolution scaling (0.8 = smaller, 1.2 = larger)
+    scale = 1.0
 }
 
 -- Voice Message Settings

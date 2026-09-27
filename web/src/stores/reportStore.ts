@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import type { Report, Message, PlayerData, CategoryConfig, PriorityConfig, Notification, ReportFilter, ReportNote, PlayerNote, PlayerHistory, Statistics, InventoryItem, InventoryItemInfo, InventoryChangeLog } from "@/types"
+import type { Report, Message, PlayerData, PlayerView, CategoryConfig, PriorityConfig, Notification, ReportFilter, ReportNote, PlayerNote, PlayerHistory, Statistics, InventoryItem, InventoryItemInfo, InventoryChangeLog } from "@/types"
 import { generateId } from "@/lib/utils"
 
 interface InventoryState {
@@ -22,7 +22,9 @@ interface ReportState {
   showPlayerInfo: boolean
   selectedPlayerId: string | null
 
-  // Feature Flags
+  // Server config
+  language: string
+  uiScale: number
   voiceMessagesEnabled: boolean
   voiceMaxDuration: number
 
@@ -49,6 +51,7 @@ interface ReportState {
 
   // Filters
   filter: ReportFilter
+  myView: PlayerView
 
   // Actions
   setVisible: (visible: boolean) => void
@@ -58,6 +61,8 @@ interface ReportState {
   setIsCreatingReport: (creating: boolean) => void
   setShowPlayerInfo: (show: boolean) => void
   setSelectedPlayerId: (id: string | null) => void
+  setLanguage: (language: string) => void
+  setUiScale: (scale: number) => void
   setVoiceMessagesEnabled: (enabled: boolean) => void
   setVoiceMaxDuration: (seconds: number) => void
   setPlayerData: (data: PlayerData) => void
@@ -68,6 +73,7 @@ interface ReportState {
   setPriorities: (priorities: PriorityConfig[]) => void
   setLocale: (locale: Record<string, string>) => void
   setFilter: (filter: Partial<ReportFilter>) => void
+  setMyView: (view: PlayerView) => void
 
   // Report Actions
   addReport: (report: Report) => void
@@ -126,6 +132,8 @@ export const useReportStore = create<ReportState>((set, get) => ({
   isCreatingReport: false,
   showPlayerInfo: false,
   selectedPlayerId: null,
+  language: "en",
+  uiScale: 1,
   voiceMessagesEnabled: false,
   voiceMaxDuration: 60,
   playerData: null,
@@ -142,9 +150,11 @@ export const useReportStore = create<ReportState>((set, get) => ({
   statistics: null,
   inventory: {},
   filter: {
-    status: "all",
-    category: "all"
+    view: "queue",
+    category: "all",
+    search: ""
   },
+  myView: "active",
 
   // UI Actions
   setVisible: (visible) => set({ isVisible: visible }),
@@ -154,6 +164,8 @@ export const useReportStore = create<ReportState>((set, get) => ({
   setIsCreatingReport: (creating) => set({ isCreatingReport: creating }),
   setShowPlayerInfo: (show) => set({ showPlayerInfo: show }),
   setSelectedPlayerId: (id) => set({ selectedPlayerId: id }),
+  setLanguage: (language) => set({ language }),
+  setUiScale: (scale) => set({ uiScale: scale }),
   setVoiceMessagesEnabled: (enabled) => set({ voiceMessagesEnabled: enabled }),
   setVoiceMaxDuration: (seconds) => set({ voiceMaxDuration: seconds }),
 
@@ -177,6 +189,7 @@ export const useReportStore = create<ReportState>((set, get) => ({
   setPriorities: (priorities) => set({ priorities }),
   setLocale: (locale) => set({ locale }),
   setFilter: (filter) => set((state) => ({ filter: { ...state.filter, ...filter } })),
+  setMyView: (view) => set({ myView: view, selectedReportId: null }),
 
   // Report Actions
   addReport: (report) => set((state) => {
@@ -399,30 +412,30 @@ export const useReportStore = create<ReportState>((set, get) => ({
   getFilteredReports: () => {
     const state = get()
 
-    // Only apply filters for admin tab - player tab shows whatever server returns
     if (state.activeTab !== "admin") {
-      return state.myReports
+      const wantResolved = state.myView === "resolved"
+      return state.myReports.filter((r) => (r.status === "resolved") === wantResolved)
     }
 
-    const { filter } = state
+    const { filter, playerData } = state
 
     // Resolved reports are not cached server-side, they come from the archive fetch.
     // Reports resolved during this session are still in allReports.
-    const reports = filter.status === "resolved"
+    const source = filter.view === "resolved"
       ? [
-          ...state.allReports.filter((r) => !state.reportArchive.some((a) => a.id === r.id)),
-          ...state.reportArchive
+          ...state.reportArchive,
+          ...state.allReports.filter((r) => r.status === "resolved" && !state.reportArchive.some((a) => a.id === r.id))
         ]
-      : state.allReports
+      : state.allReports.filter((r) => r.status !== "resolved")
 
-    // The search box is labelled "player", staff type names or #ids, not license hashes
-    const search = filter.playerId?.trim().toLowerCase().replace(/^#/, "")
+    // Staff type names or #ids here, not license hashes
+    const search = filter.search.trim().toLowerCase().replace(/^#/, "")
 
-    return reports.filter((report) => {
-      if (filter.status && filter.status !== "all" && report.status !== filter.status) {
+    return source.filter((report) => {
+      if (filter.view === "mine" && report.claimedBy !== playerData?.identifier) {
         return false
       }
-      if (filter.category && filter.category !== "all" && report.category !== filter.category) {
+      if (filter.category !== "all" && report.category !== filter.category) {
         return false
       }
       if (search) {

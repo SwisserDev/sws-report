@@ -1,130 +1,249 @@
 @import "tailwindcss";
 
-/* SWISSER V2 Design System - Tailwind v4 Theme */
+/*
+ * Runs in FiveM's CEF 103 (Chrome 103):
+ * - no backdrop-filter (can't see the game behind it), no color-mix/oklch, no :has(), no container queries
+ * - no `translate`/`rotate`/`scale` properties (Chrome 104+), so Tailwind's translate-*, rotate-*, scale-*
+ *   utilities are off limits; use `transform:` in plain CSS instead
+ * - no opacity modifiers (bg-x/50) on theme colors, they compile to color-mix. Use the explicit tokens.
+ *
+ * Colors follow Radix' 12 step scales (slate + blue/amber/green/red/orange), dark first.
+ */
 @theme {
-  /* Colors - Background */
-  --color-bg-primary: #0a0a0a;
-  --color-bg-secondary: #111111;
-  --color-bg-tertiary: #1a1a1a;
-  --color-bg-card: #161616;
-  --color-bg-elevated: #1f1f1f;
+  /* Surfaces: app -> panel -> component -> hover -> selected */
+  --color-canvas: #111113;
+  --color-panel: #18191b;
+  --color-raised: #212225;
+  --color-hover: #272a2d;
+  --color-active: #2e3135;
 
-  /* Colors - Text */
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #a0a0a0;
-  --color-text-tertiary: #707070;
-  --color-text-muted: #505050;
+  --color-line: #2a2d31;
+  --color-line-strong: #363a3f;
+  --color-line-focus: #5a6169;
 
-  /* Colors - Accent */
-  --color-accent: #6b7280;
-  --color-accent-hover: #9ca3af;
+  --color-fg: #edeef0;
+  --color-fg-muted: #b0b4ba;
+  --color-fg-subtle: #8b8f97;
+  --color-fg-faint: #696e77;
+  --color-fg-on-accent: #ffffff;
 
-  /* Colors - Status */
-  --color-success: #10b981;
-  --color-success-bg: rgba(16, 185, 129, 0.1);
-  --color-success-border: rgba(16, 185, 129, 0.3);
+  --color-accent: #0d74ce;
+  --color-accent-hover: #1a80da;
+  --color-accent-fg: #70b8ff;
+  --color-accent-soft: #0d2847;
+  --color-accent-line: #205d9e;
 
-  --color-error: #ef4444;
-  --color-error-bg: rgba(239, 68, 68, 0.1);
-  --color-error-border: rgba(239, 68, 68, 0.3);
+  --color-amber: #ffc53d;
+  --color-amber-fg: #ffca16;
+  --color-amber-soft: #2a1d07;
+  --color-amber-line: #5c3d05;
 
-  --color-warning: #f59e0b;
-  --color-warning-bg: rgba(245, 158, 11, 0.1);
-  --color-warning-border: rgba(245, 158, 11, 0.3);
+  --color-green: #30a46c;
+  --color-green-fg: #3dd68c;
+  --color-green-soft: #132d21;
+  --color-green-line: #28684a;
 
-  --color-info: #3b82f6;
-  --color-info-bg: rgba(59, 130, 246, 0.1);
-  --color-info-border: rgba(59, 130, 246, 0.3);
+  --color-red: #e5484d;
+  --color-red-fg: #ff9592;
+  --color-red-soft: #3b1219;
+  --color-red-line: #8c333a;
 
-  /* Colors - Border */
-  --color-border: rgba(255, 255, 255, 0.06);
-  --color-border-hover: rgba(255, 255, 255, 0.12);
+  --color-orange: #f76b15;
+  --color-orange-fg: #ffa057;
+  --color-orange-soft: #331e0b;
+  --color-orange-line: #7e451d;
 
-  /* Fonts */
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --color-scrim: rgba(6, 7, 9, 0.62);
 
-  /* Border Radius */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --font-sans: var(--font-plex-sans), "Segoe UI", "Yu Gothic UI", "Meiryo", sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "Consolas", monospace;
 
-  /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  /* Dense tool scale: 11 / 12 / 13 / 14 / 16 / 20 / 24 at the 1080p reference */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 0.875rem;
+  --text-base--line-height: 1.375rem;
+  --text-md: 1rem;
+  --text-md--line-height: 1.5rem;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.5rem;
+  --text-xl--line-height: 2rem;
+  --text-2xl: 2rem;
+  --text-2xl--line-height: 2.25rem;
 
-  /* Animations */
-  --animate-fade-in: fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --animate-slide-in: slide-in-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --animate-scale-in: scale-in 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+
+  --shadow-window: 0 1.5rem 4rem rgba(0, 0, 0, 0.55);
+  --shadow-pop: 0 0.75rem 2rem rgba(0, 0, 0, 0.45);
 }
 
-/* Light theme overrides */
 [data-theme="light"] {
-  --color-bg-primary: #f5f5f5;
-  --color-bg-secondary: #ffffff;
-  --color-bg-tertiary: #f0f0f0;
-  --color-bg-card: #ffffff;
-  --color-bg-elevated: #fafafa;
-  --color-text-primary: #111111;
-  --color-text-secondary: #666666;
-  --color-text-tertiary: #999999;
-  --color-text-muted: #cccccc;
-  --color-border: rgba(0, 0, 0, 0.08);
-  --color-border-hover: rgba(0, 0, 0, 0.15);
+  --color-canvas: #f9f9fb;
+  --color-panel: #ffffff;
+  --color-raised: #f0f0f3;
+  --color-hover: #e8e8ec;
+  --color-active: #e0e1e6;
+
+  --color-line: #e3e4e9;
+  --color-line-strong: #d9d9e0;
+  --color-line-focus: #b9bbc6;
+
+  --color-fg: #1c2024;
+  --color-fg-muted: #4f535b;
+  --color-fg-subtle: #60646c;
+  --color-fg-faint: #8b8d98;
+
+  --color-accent-fg: #0d74ce;
+  --color-accent-soft: #e6f4fe;
+  --color-accent-line: #8ec8f6;
+
+  /* Solid amber glyphs need more weight on white */
+  --color-amber: #d39200;
+  --color-amber-fg: #ab6400;
+  --color-amber-soft: #fff7c2;
+  --color-amber-line: #e9c162;
+
+  --color-green-fg: #218358;
+  --color-green-soft: #e6f6eb;
+  --color-green-line: #8eceaa;
+
+  --color-red-fg: #ce2c31;
+  --color-red-soft: #feebec;
+  --color-red-line: #f4a9aa;
+
+  --color-orange-fg: #cc4e00;
+  --color-orange-soft: #ffefd6;
+  --color-orange-line: #f5ae73;
+
+  --color-scrim: rgba(6, 7, 9, 0.5);
+
+  --shadow-window: 0 1.5rem 4rem rgba(0, 0, 0, 0.35);
+  --shadow-pop: 0 0.75rem 2rem rgba(16, 24, 40, 0.16);
 }
 
-/* Keyframes */
-@keyframes fade-in {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(100%); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes scale-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-/* Base Styles */
-html, body {
+html,
+body {
   height: 100%;
   width: 100%;
   overflow: hidden;
   background: transparent;
-  font-size: 16px;
 }
 
-/* Responsive Typography - larger fonts on larger screens */
-@media (min-width: 1280px) {
-  html { font-size: 17px; }
+html {
+  /* 16px at the 1080p reference, scales with the game resolution so 1440p/4K aren't tiny.
+     --ui-scale comes from Config.UI.scale */
+  font-size: calc(clamp(12px, min(1.4815vh, 0.8333vw), 36px) * var(--ui-scale, 1));
 }
 
-@media (min-width: 1536px) {
-  html { font-size: 18px; }
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "tnum" 1;
+  -webkit-font-smoothing: antialiased;
+  color: var(--color-fg);
 }
 
-/* Scrollbar */
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-fg);
+}
+
+/* Keyboard focus only, mouse users don't need the ring */
+:focus-visible {
+  outline: 2px solid var(--color-accent-fg);
+  outline-offset: 1px;
+}
+
+/* Fields already switch their border color on focus */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 0.5rem;
+  height: 0.5rem;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-bg-tertiary);
-  border-radius: 3px;
+  background: var(--color-line-strong);
+  border-radius: 0.25rem;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent);
+  background-color: var(--color-line-focus);
+}
+
+@keyframes window-in {
+  from { opacity: 0; transform: translateY(0.375rem); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(-0.25rem); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(1rem); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes arrive {
+  from { background-color: var(--color-accent-soft); }
+  to { background-color: transparent; }
+}
+
+.anim-window { animation: window-in 160ms ease-out; }
+.anim-fade { animation: fade-in 120ms ease-out; }
+.anim-pop { animation: pop-in 120ms ease-out; }
+.anim-toast { animation: toast-in 180ms ease-out; }
+.anim-spin { animation: spin 0.9s linear infinite; }
+.anim-arrive { animation: arrive 1.6s ease-out; }
+
+/* Text in chat/notes keeps the user's line breaks */
+.prewrap {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Legacy names still used by the statistics view until it is redesigned */
+@theme inline {
+  --color-bg-card: var(--color-panel);
+  --color-bg-elevated: var(--color-raised);
+  --color-bg-tertiary: var(--color-raised);
+  --color-text-primary: var(--color-fg);
+  --color-text-secondary: var(--color-fg-muted);
+  --color-text-muted: var(--color-fg-faint);
+  --color-border: var(--color-line);
 }

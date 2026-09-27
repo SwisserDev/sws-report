@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useEffect, useState } from "react"
 import { useReportStore } from "@/stores/reportStore"
 import { useNuiActions } from "@/hooks/useNui"
-import { Button, Badge } from "@/components/ui"
-import { PriorityBadge } from "@/components/ui/PriorityBadge"
-import { useEscapeLayer } from "@/hooks/useEscapeLayer"
-import { formatRelativeTime, formatTimestamp, truncate } from "@/lib/utils"
-import type { PlayerNote, HistoryReport, PlayerIdentifiers } from "@/types"
+import { Avatar, Button, EmptyState, Icon, Modal, NoteCard, PriorityGlyph, Spinner, StatusGlyph } from "@/components/ui"
+import { getCategoryLabel, getPriorityMeta, getStatusLabel } from "@/lib/reportMeta"
+import { formatDateTime, formatFullDate } from "@/lib/time"
+import { cn } from "@/lib/utils"
+import type { PlayerIdentifiers } from "@/types"
 
 interface PlayerInfoPanelProps {
   playerId: string
@@ -15,374 +15,201 @@ interface PlayerInfoPanelProps {
   onClose: () => void
 }
 
-type ActiveTab = "history" | "notes"
+type Tab = "history" | "notes"
 
-// Identifier display configuration
-const IDENTIFIER_CONFIG: { key: keyof PlayerIdentifiers; label: string; localeKey: string }[] = [
+const IDENTIFIERS: { key: keyof PlayerIdentifiers; label: string; localeKey: string }[] = [
   { key: "license", label: "License", localeKey: "identifier_license" },
-  { key: "steam", label: "Steam", localeKey: "identifier_steam" },
   { key: "discord", label: "Discord", localeKey: "identifier_discord" },
-  { key: "fivem", label: "FiveM", localeKey: "identifier_fivem" },
+  { key: "steam", label: "Steam", localeKey: "identifier_steam" },
+  { key: "fivem", label: "FiveM", localeKey: "identifier_fivem" }
 ]
 
-// Copy Modal Component - shows input field with auto-select for Ctrl+C
-function CopyIdentifierModal({
-  identifier,
-  label,
-  copyHint,
-  onClose
-}: {
-  identifier: string
-  label: string
-  copyHint: string
-  onClose: () => void
-}) {
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  // Opened from the player panel, so it sits one layer above it
-  useEscapeLayer(onClose, true, 2)
-
-  useEffect(() => {
-    // Auto-select the input content when modal opens
-    if (inputRef.current) {
-      inputRef.current.focus()
-      inputRef.current.select()
-    }
-  }, [])
-
-  return (
-    <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60]"
-      onClick={onClose}
-    >
-      <div
-        className="bg-bg-secondary border border-border rounded-lg p-4 w-full max-w-md shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium text-text-primary">{label}</span>
-          <button
-            onClick={onClose}
-            className="text-text-tertiary hover:text-text-primary transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <input
-          ref={inputRef}
-          type="text"
-          value={identifier}
-          readOnly
-          className="w-full px-3 py-2 text-sm font-mono bg-bg-tertiary border border-border rounded-lg text-text-primary focus:outline-none focus:border-accent select-all"
-          onFocus={(e) => e.target.select()}
-        />
-        <p className="text-xs text-text-tertiary mt-2 text-center">
-          {copyHint}
-        </p>
-      </div>
-    </div>
-  )
-}
-
 export function PlayerInfoPanel({ playerId, playerName, onClose }: PlayerInfoPanelProps) {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("history")
+  const [tab, setTab] = useState<Tab>("history")
   const [newNote, setNewNote] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [selectedIdentifier, setSelectedIdentifier] = useState<{ value: string; label: string } | null>(null)
-
-  const { playerHistory, locale, categories, hasPermission } = useReportStore()
+  const { playerHistory, locale, categories, priorities, hasPermission, language, addNotification } = useReportStore()
   const { getPlayerHistory, addPlayerNote, deletePlayerNote } = useNuiActions()
 
-  useEscapeLayer(onClose)
+  const history = playerHistory?.playerId === playerId ? playerHistory : null
+  const canManage = hasPermission("manage_notes")
 
   useEffect(() => {
     getPlayerHistory(playerId)
   }, [playerId, getPlayerHistory])
 
-  const handleAddNote = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newNote.trim() || isSubmitting) return
+  const submitNote = () => {
+    const text = newNote.trim()
+    if (!text || !history) return
 
-    const noteText = newNote.trim()
-    setIsSubmitting(true)
+    useReportStore.getState().setPlayerHistory({
+      ...history,
+      notes: [{ id: -Date.now(), playerId, adminId: "pending", adminName: locale.you || "You", note: text, createdAt: new Date().toISOString() }, ...history.notes]
+    })
+    addPlayerNote(playerId, text)
     setNewNote("")
-
-    const optimisticNote: PlayerNote = {
-      id: -Date.now(),
-      playerId,
-      adminId: "pending",
-      adminName: "You",
-      note: noteText,
-      createdAt: new Date().toISOString()
-    }
-
-    if (playerHistory) {
-      useReportStore.getState().setPlayerHistory({
-        ...playerHistory,
-        notes: [optimisticNote, ...playerHistory.notes]
-      })
-    }
-
-    addPlayerNote(playerId, noteText)
-    setTimeout(() => setIsSubmitting(false), 500)
   }
 
-  const handleDeleteNote = (noteId: number) => {
-    if (playerHistory) {
-      useReportStore.getState().setPlayerHistory({
-        ...playerHistory,
-        notes: playerHistory.notes.filter((n) => n.id !== noteId)
-      })
+  const removeNote = (noteId: number) => {
+    if (history) {
+      useReportStore.getState().setPlayerHistory({ ...history, notes: history.notes.filter((n) => n.id !== noteId) })
     }
     useReportStore.getState().removePlayerNote(playerId, noteId)
     deletePlayerNote(noteId)
   }
 
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case "open": return "open"
-      case "claimed": return "claimed"
-      case "resolved": return "resolved"
-      default: return "default"
+  // CEF has no async clipboard permission, the old execCommand still works there
+  const copy = (event: React.MouseEvent<HTMLInputElement>) => {
+    event.currentTarget.select()
+    try {
+      if (document.execCommand("copy")) {
+        addNotification({ message: locale.copied || "Copied!", type: "success", duration: 1500 })
+      }
+    } catch {
+      // Selected anyway, Ctrl+C works
     }
   }
 
-  const getCategoryLabel = (categoryId: string) => {
-    const cat = categories.find((c) => c.id === categoryId)
-    return cat?.label || categoryId
-  }
+  const identifiers = IDENTIFIERS.filter(({ key }) => history?.identifiers?.[key])
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
-      <div
-        className="bg-bg-secondary border border-border rounded-xl w-full max-w-4xl xl:max-w-5xl 2xl:max-w-7xl max-h-[80vh] flex flex-col shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-accent/20 rounded-full flex items-center justify-center">
-              <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-text-primary">{playerName}</h2>
-              <p className="text-xs text-text-tertiary font-mono">{playerId}</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-text-tertiary hover:text-text-primary transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <Modal
+      isOpen
+      onClose={onClose}
+      size="xl"
+      title={
+        <span className="flex items-center gap-3">
+          <Avatar name={playerName} size="lg" />
+          <span className="flex flex-col">
+            <span>{playerName}</span>
+            <span className="font-mono text-xs font-normal text-fg-subtle">{playerId}</span>
+          </span>
+        </span>
+      }
+    >
+      {!history ? (
+        <div className="flex items-center justify-center gap-2 py-16 text-sm text-fg-subtle">
+          <Spinner /> {locale.loading || "Loading..."}
         </div>
-
-        {/* Identifiers - only shown if player is online */}
-        {playerHistory?.identifiers && Object.keys(playerHistory.identifiers).length > 0 && (
-          <div className="px-6 py-3 border-b border-border bg-bg-tertiary/30">
-            <div className="grid grid-cols-2 xl:grid-cols-4 gap-2">
-              {IDENTIFIER_CONFIG.map(({ key, label, localeKey }) => {
-                const value = playerHistory.identifiers?.[key]
-                if (!value) return null
-
-                const displayLabel = locale[localeKey] || label
-
-                return (
-                  <button
-                    key={key}
-                    onClick={() => setSelectedIdentifier({ value, label: displayLabel })}
-                    className="flex items-center gap-2 px-3 py-2 bg-bg-card hover:bg-bg-elevated border border-border rounded-lg transition-colors group text-left"
-                    title={value}
-                  >
-                    <span className="text-xs font-medium text-text-tertiary min-w-[52px]">
-                      {displayLabel}
-                    </span>
-                    <span className="flex-1 text-xs text-text-secondary font-mono truncate">
-                      {truncate(value, 20)}
-                    </span>
-                    <svg className="w-4 h-4 text-text-tertiary group-hover:text-text-secondary flex-shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Stats */}
-        {playerHistory && (
-          <div className="flex items-center gap-6 px-6 py-3 border-b border-border bg-bg-tertiary/50">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-text-primary">{playerHistory.totalReports}</p>
-              <p className="text-xs text-text-tertiary">{locale.total_reports || "Total Reports"}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-warning">{playerHistory.openReports}</p>
-              <p className="text-xs text-text-tertiary">{locale.open_reports || "Open"}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-success">{playerHistory.resolvedReports}</p>
-              <p className="text-xs text-text-tertiary">{locale.resolved_reports || "Resolved"}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-accent">{playerHistory.notes?.length || 0}</p>
-              <p className="text-xs text-text-tertiary">{locale.notes || "Notes"}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Tabs */}
-        <div className="flex border-b border-border">
-          <button
-            onClick={() => setActiveTab("history")}
-            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              activeTab === "history"
-                ? "border-accent text-text-primary"
-                : "border-transparent text-text-tertiary hover:text-text-secondary"
-            }`}
-          >
-            <span className="flex items-center justify-center gap-2">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {locale.report_history || "Report History"}
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveTab("notes")}
-            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              activeTab === "notes"
-                ? "border-accent text-text-primary"
-                : "border-transparent text-text-tertiary hover:text-text-secondary"
-            }`}
-          >
-            <span className="flex items-center justify-center gap-2">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              {locale.player_notes || "Player Notes"}
-            </span>
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto">
-          {activeTab === "history" ? (
-            <div className="p-4 space-y-3">
-              {!playerHistory || playerHistory.reports.length === 0 ? (
-                <p className="text-sm text-text-tertiary text-center py-8">
-                  {locale.no_report_history || "No report history"}
-                </p>
-              ) : (
-                playerHistory.reports.map((report: HistoryReport) => (
-                  <div key={report.id} className="p-4 bg-bg-card border border-border rounded-lg">
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs text-text-tertiary">#{report.id}</span>
-                        <Badge variant={getStatusVariant(report.status)}>
-                          {locale[`status_${report.status}`] || report.status}
-                        </Badge>
-                        <PriorityBadge priority={report.priority} size="sm" />
-                      </div>
-                      <span className="text-xs text-text-tertiary">{formatRelativeTime(report.createdAt)}</span>
-                    </div>
-                    <h4 className="text-sm font-medium text-text-primary mb-1">{report.subject}</h4>
-                    <div className="flex items-center gap-3 text-xs text-text-tertiary">
-                      <span className="px-2 py-0.5 bg-bg-elevated rounded">{getCategoryLabel(report.category)}</span>
-                      {report.claimedByName && (
-                        <span className="flex items-center gap-1">
-                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                          </svg>
-                          {report.claimedByName}
-                        </span>
-                      )}
-                      {report.resolvedAt && (
-                        <span>{locale.resolved_at || "Resolved"}: {formatTimestamp(report.resolvedAt)}</span>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          ) : (
-            <div className="flex flex-col h-full">
-              <div className="flex-1 p-4 space-y-3 overflow-y-auto">
-                {!playerHistory || playerHistory.notes.length === 0 ? (
-                  <p className="text-sm text-text-tertiary text-center py-8">
-                    {locale.no_player_notes || "No notes for this player"}
-                  </p>
-                ) : (
-                  playerHistory.notes.map((note: PlayerNote) => (
-                    <div key={note.id} className="p-3 bg-bg-tertiary rounded-lg group">
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <span className="text-xs font-medium text-accent">{note.adminName}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] xl:text-xs text-text-tertiary">{formatRelativeTime(note.createdAt)}</span>
-                          {hasPermission("manage_notes") && (
-                            <button
-                              onClick={() => handleDeleteNote(note.id)}
-                              className="opacity-0 group-hover:opacity-100 text-text-tertiary hover:text-red-400 transition-all"
-                              title={locale.delete || "Delete"}
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-sm text-text-secondary whitespace-pre-wrap">{note.note}</p>
-                    </div>
-                  ))
-                )}
+      ) : (
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap gap-x-8 gap-y-2 py-3 border-y border-line">
+            {[
+              { label: locale.total_reports || "Total Reports", value: history.totalReports },
+              { label: locale.open_reports || "Open", value: history.openReports },
+              { label: locale.resolved_reports || "Resolved", value: history.resolvedReports },
+              { label: locale.notes || "Notes", value: history.notes.length }
+            ].map((stat) => (
+              <div key={stat.label} className="flex items-baseline gap-2">
+                <span className="text-xl font-semibold tabular-nums text-fg">{stat.value}</span>
+                <span className="text-sm text-fg-subtle">{stat.label}</span>
               </div>
+            ))}
+          </div>
 
-              {hasPermission("manage_notes") && (
-                <form onSubmit={handleAddNote} className="p-4 border-t border-border">
-                  <div className="flex gap-2">
-                    <textarea
-                      value={newNote}
-                      onChange={(e) => setNewNote(e.target.value)}
-                      placeholder={locale.add_player_note_placeholder || "Add a note about this player..."}
-                      className="flex-1 px-3 py-2 text-sm bg-bg-tertiary border border-border rounded-lg resize-none focus:outline-none focus:border-accent text-text-primary placeholder:text-text-tertiary"
-                      rows={2}
-                      maxLength={1000}
-                    />
-                    <Button
-                      type="submit"
-                      size="sm"
-                      variant="primary"
-                      disabled={!newNote.trim() || isSubmitting}
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                    </Button>
-                  </div>
-                </form>
+          {identifiers.length > 0 && (
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+              {identifiers.map(({ key, label, localeKey }) => (
+                <label key={key} className="flex items-center gap-3 min-w-0">
+                  <span className="w-16 shrink-0 text-sm text-fg-subtle">{locale[localeKey] || label}</span>
+                  <input
+                    readOnly
+                    value={history.identifiers?.[key] ?? ""}
+                    onClick={copy}
+                    title={locale.copy_hint || "Click to copy"}
+                    className="flex-1 min-w-0 h-8 px-2.5 rounded-md border border-line-strong bg-raised font-mono text-xs text-fg-muted cursor-copy hover:border-line-focus focus:outline-none focus:border-accent-fg"
+                  />
+                </label>
+              ))}
+            </div>
+          )}
+
+          <div className="flex gap-1 border-b border-line" role="tablist">
+            {([
+              { id: "history", label: locale.report_history || "Report History", icon: "history" },
+              { id: "notes", label: locale.player_notes || "Player Notes", icon: "note" }
+            ] as const).map((item) => {
+              const selected = tab === item.id
+              const isNotes = item.id === "notes"
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  onClick={() => setTab(item.id)}
+                  className={cn(
+                    "relative flex items-center gap-1.5 h-9 px-3 text-sm font-medium",
+                    selected ? (isNotes ? "text-amber-fg" : "text-fg") : "text-fg-subtle hover:text-fg"
+                  )}
+                >
+                  <Icon name={item.icon} />
+                  {item.label}
+                  <span className={cn("absolute left-1.5 right-1.5 -bottom-px h-0.5 rounded-full", selected ? (isNotes ? "bg-amber" : "bg-accent-fg") : "bg-transparent")} />
+                </button>
+              )
+            })}
+          </div>
+
+          {tab === "history" ? (
+            history.reports.length === 0 ? (
+              <EmptyState icon="history" title={locale.no_report_history || "No report history"} />
+            ) : (
+              <div className="flex flex-col rounded-lg border border-line overflow-hidden">
+                {history.reports.map((report) => {
+                  const priority = getPriorityMeta(report.priority, priorities, locale)
+                  return (
+                    <div key={report.id} className="flex items-center gap-3 h-11 px-3.5 border-b border-line last:border-b-0 text-sm">
+                      <span title={getStatusLabel(report.status, locale)}><StatusGlyph status={report.status} /></span>
+                      <span title={priority.label}><PriorityGlyph meta={priority} /></span>
+                      <span className="font-mono text-xs text-fg-faint w-10">#{report.id}</span>
+                      <span className="flex-1 truncate text-base text-fg">{report.subject}</span>
+                      <span className="text-fg-subtle w-32 truncate">{getCategoryLabel(report.category, categories, locale)}</span>
+                      <span className="text-fg-subtle w-32 truncate">{report.claimedByName || "–"}</span>
+                      <span className="text-fg-subtle w-28 text-right tabular-nums" title={formatFullDate(report.createdAt, language)}>
+                        {formatDateTime(report.createdAt, language)}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          ) : (
+            <div className="flex flex-col gap-2.5">
+              {canManage && (
+                <div className="flex items-end gap-2 p-3 rounded-lg border border-amber-line bg-amber-soft">
+                  <textarea
+                    value={newNote}
+                    rows={2}
+                    maxLength={1000}
+                    onChange={(event) => setNewNote(event.target.value)}
+                    placeholder={locale.add_player_note_placeholder || "Add a note about this player..."}
+                    className="flex-1 min-w-0 px-3 py-2 rounded-md border border-amber-line bg-panel text-base text-fg placeholder:text-fg-faint resize-none focus:outline-none focus:border-amber"
+                  />
+                  <Button variant="secondary" icon="note" onClick={submitNote} disabled={!newNote.trim()} className="h-10">
+                    {locale.add_note || "Add note"}
+                  </Button>
+                </div>
+              )}
+              {history.notes.length === 0 ? (
+                <EmptyState icon="note" title={locale.no_player_notes || "No notes for this player"} />
+              ) : (
+                history.notes.map((note) => (
+                  <NoteCard
+                    key={note.id}
+                    author={note.adminName}
+                    text={note.note}
+                    createdAt={note.createdAt}
+                    language={language}
+                    pending={note.id < 0}
+                    onDelete={canManage && note.id > 0 ? () => removeNote(note.id) : undefined}
+                    deleteLabel={locale.delete || "Delete"}
+                  />
+                ))
               )}
             </div>
           )}
         </div>
-      </div>
-
-      {/* Copy Identifier Modal */}
-      {selectedIdentifier && (
-        <CopyIdentifierModal
-          identifier={selectedIdentifier.value}
-          label={selectedIdentifier.label}
-          copyHint={locale.copy_hint || "Ctrl+C to copy"}
-          onClose={() => setSelectedIdentifier(null)}
-        />
       )}
-    </div>
+    </Modal>
   )
 }

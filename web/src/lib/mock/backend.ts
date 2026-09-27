@@ -1,7 +1,7 @@
 // Fake Lua side for `npm run dev`, so the UI can be clicked through in a normal browser.
 // Loaded through a dynamic import from browser mode only, it never ships into FiveM's code path.
 //
-// URL params: ?lang=de&theme=light&tab=admin&report=150&status=resolved
+// URL params: ?lang=de&theme=light&tab=admin&report=150&view=resolved&scale=1
 import type { Message, Report, ReportNote, PlayerNote } from "@/types"
 import locales from "./locales.json"
 import {
@@ -261,7 +261,9 @@ function showUi() {
     playerData: ME,
     locale: { ...locales.en, ...(locales[lang] ?? {}) },
     voiceMessagesEnabled: true,
-    voiceMaxDuration: 60
+    voiceMaxDuration: 60,
+    language: lang,
+    uiScale: Number(params.get("scale") ?? 1)
   }, 0)
 }
 
@@ -287,8 +289,8 @@ export function bootMock() {
     const store = useReportStore.getState()
     const tab = params.get("tab")
     if (tab === "admin" || tab === "statistics" || tab === "my-reports") store.setActiveTab(tab)
-    const status = params.get("status")
-    if (status === "open" || status === "claimed" || status === "resolved" || status === "all") store.setFilter({ status })
+    const view = params.get("view")
+    if (view === "queue" || view === "mine" || view === "resolved") store.setFilter({ view })
     const report = params.get("report")
     if (report) store.setSelectedReportId(Number(report))
   }, 60)
