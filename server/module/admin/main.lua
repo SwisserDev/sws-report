@@ -2,7 +2,7 @@
 ---@param source integer Admin server ID
 ---@param reportId integer Report ID
 ---@param action AdminAction Action type
-RegisterNetEvent("sws-report:adminAction", function(reportId, action)
+RegisterNetEvent("sws-report:adminAction", function(reportId, action, reason)
     local source = source
 
     if not IsValidReportId(reportId) then
@@ -30,7 +30,7 @@ RegisterNetEvent("sws-report:adminAction", function(reportId, action)
     elseif action == AdminAction.SPECTATE_PLAYER then
         SpectatePlayer(source, reportId)
     elseif action == AdminAction.KICK_PLAYER then
-        KickPlayer(source, reportId)
+        KickPlayer(source, reportId, reason)
     elseif action == AdminAction.REVIVE_PLAYER then
         RevivePlayer(source, reportId)
     elseif action == AdminAction.SCREENSHOT_PLAYER then

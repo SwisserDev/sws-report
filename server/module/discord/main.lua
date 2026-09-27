@@ -371,7 +371,8 @@ end
 ---@param target PlayerData Target player data
 ---@param reportId? number Report ID
 ---@return table
-local function buildAdminActionEmbed(action, admin, target, reportId)
+---@param reason? string Optional reason (kick)
+local function buildAdminActionEmbed(action, admin, target, reportId, reason)
     local actionLabels = {
         teleport_to = "Teleported To",
         bring_player = "Brought Player",
@@ -406,7 +407,12 @@ local function buildAdminActionEmbed(action, admin, target, reportId)
                         name = "Report",
                         value = reportId and ("#" .. reportId) or "N/A",
                         inline = true
-                    }
+                    },
+                    reason and reason ~= "" and {
+                        name = "Reason",
+                        value = reason,
+                        inline = false
+                    } or nil
                 },
                 timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
                 footer = {
@@ -446,8 +452,8 @@ AddEventHandler("sws-report:discord:voiceMessage", function(report, message)
     sendWebhook("voiceMessage", buildVoiceMessageEmbed(report, message))
 end)
 
-AddEventHandler("sws-report:discord:adminAction", function(action, admin, target, reportId)
-    sendWebhook("adminAction", buildAdminActionEmbed(action, admin, target, reportId))
+AddEventHandler("sws-report:discord:adminAction", function(action, admin, target, reportId, reason)
+    sendWebhook("adminAction", buildAdminActionEmbed(action, admin, target, reportId, reason))
 end)
 
 DebugPrint("Discord module loaded")

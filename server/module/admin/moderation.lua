@@ -46,7 +46,8 @@ end
 ---Kick player from server
 ---@param adminSource integer Admin server ID
 ---@param reportId integer Report ID
-function KickPlayer(adminSource, reportId)
+---@param reason? string Shown to the kicked player and logged
+function KickPlayer(adminSource, reportId, reason)
     local report = Reports[reportId]
 
     if not report then
@@ -63,11 +64,16 @@ function KickPlayer(adminSource, reportId)
 
     local adminName = Players[adminSource].name
     local playerName = playerData.name
+    reason = SanitizeString(reason, 200)
 
-    SendSystemMessage(reportId, L("action_kick_player", adminName))
-    TriggerEvent("sws-report:discord:adminAction", "kick_player", Players[adminSource], playerData, reportId)
+    if reason ~= "" then
+        SendSystemMessage(reportId, L("action_kick_player_reason", adminName, reason))
+    else
+        SendSystemMessage(reportId, L("action_kick_player", adminName))
+    end
+    TriggerEvent("sws-report:discord:adminAction", "kick_player", Players[adminSource], playerData, reportId, reason)
 
-    DropPlayer(playerData.source, L("kicked_reason", adminName))
+    DropPlayer(playerData.source, reason ~= "" and L("kicked_reason_text", adminName, reason) or L("kicked_reason", adminName))
     NotifyPlayer(adminSource, L("player_kicked"), "success")
 
     DebugPrint(("Admin %s kicked player %s (Report #%d)"):format(

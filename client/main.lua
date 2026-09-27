@@ -169,7 +169,7 @@ RegisterNUICallback("getMessages", function(data, cb)
 end)
 
 RegisterNUICallback("adminAction", function(data, cb)
-    TriggerServerEvent("sws-report:adminAction", data.reportId, data.action)
+    TriggerServerEvent("sws-report:adminAction", data.reportId, data.action, data.reason)
     cb("ok")
 end)
 
