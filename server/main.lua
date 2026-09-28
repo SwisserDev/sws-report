@@ -553,6 +553,11 @@ RegisterNetEvent("sws-report:refresh", function()
 
     local isAdmin = RefreshPlayerPermissions(source)
 
+    -- The usual "why can't my staff see the admin panel" question, answered with Config.Debug
+    DebugPrint(("Menu opened by %s (%s) - admin: %s, group: %s"):format(
+        Players[source].name, Players[source].identifier, tostring(isAdmin), tostring(GetPlayerGroup(source))
+    ))
+
     TriggerClientEvent("sws-report:setPlayerData", source, buildClientPlayerData(source))
 
     if isAdmin then
