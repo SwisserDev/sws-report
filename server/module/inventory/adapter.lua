@@ -92,3 +92,6 @@ end
 function GetInventorySystemName()
     return InventorySystemName
 end
+
+exports("IsInventoryAvailable", IsInventoryAvailable)
+exports("GetInventorySystemName", GetInventorySystemName)

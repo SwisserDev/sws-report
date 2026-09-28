@@ -313,6 +313,8 @@ RegisterNetEvent("sws-report:createReport", function(data)
     end
 
     TriggerEvent("sws-report:discord:newReport", serializedReport)
+    -- Public hooks for other resources (documented in the README)
+    TriggerEvent("sws-report:onCreated", serializedReport)
 
     -- Auto-screenshot if enabled
     if Config.Screenshot and Config.Screenshot.autoOnCreate then
@@ -358,6 +360,7 @@ RegisterNetEvent("sws-report:claimReport", function(reportId)
     NotifyPlayer(source, L("report_claimed"), "success")
 
     TriggerEvent("sws-report:discord:claimed", report:serialize(), admin)
+    TriggerEvent("sws-report:onClaimed", report:serialize(), admin.identifier)
 
     DebugPrint(("Report #%d claimed by %s"):format(reportId, admin.name))
 end)
@@ -445,6 +448,7 @@ RegisterNetEvent("sws-report:resolveReport", function(reportId)
     NotifyPlayer(source, L("report_resolved"), "success")
 
     TriggerEvent("sws-report:discord:resolved", report:serialize(), admin)
+    TriggerEvent("sws-report:onResolved", report:serialize(), admin.identifier)
 
     DebugPrint(("Report #%d resolved by %s"):format(reportId, admin.name))
 end)
@@ -517,6 +521,7 @@ RegisterNetEvent("sws-report:deleteReport", function(reportId)
     NotifyPlayer(source, L("report_deleted"), "success")
 
     TriggerEvent("sws-report:discord:deleted", reportData, player)
+    TriggerEvent("sws-report:onDeleted", reportData, player.identifier)
 
     DebugPrint(("Report #%d deleted by %s"):format(reportId, player.name))
 end)
@@ -641,6 +646,7 @@ exports("CloseReport", function(reportId)
 
     broadcastReportUpdate(report, "reportUpdated")
     TriggerEvent("sws-report:discord:resolved", report:serialize(), { name = GetInvokingResource() or "API" })
+    TriggerEvent("sws-report:onResolved", report:serialize(), nil)
 
     Reports[reportId] = nil
     return true
