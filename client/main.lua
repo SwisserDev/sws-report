@@ -229,8 +229,8 @@ RegisterNUICallback("getPlayerHistory", function(data, cb)
     cb("ok")
 end)
 
-RegisterNUICallback("getStatistics", function(_, cb)
-    TriggerServerEvent("sws-report:getStatistics")
+RegisterNUICallback("getStatistics", function(data, cb)
+    TriggerServerEvent("sws-report:getStatistics", data.range)
     cb("ok")
 end)
 

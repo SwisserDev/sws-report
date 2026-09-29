@@ -9,7 +9,8 @@ import type {
   PriorityConfig,
   Report,
   ReportNote,
-  Statistics
+  Statistics,
+  StatsRange
 } from "@/types"
 
 const minutesAgo = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOString()
@@ -280,39 +281,128 @@ export const INVENTORY: InventoryItem[] = [
   { name: "radio", label: "Radio", count: 1, slot: 8 }
 ]
 
-const day = (offset: number) => {
-  const d = new Date()
-  d.setDate(d.getDate() - offset)
-  return d.toISOString().slice(0, 10)
+// Deterministic noise so screenshots stay comparable between runs
+const seeded = (seed: number) => () => {
+  seed = (seed * 16807) % 2147483647
+  return (seed - 1) / 2147483646
 }
 
-export const STATISTICS: Statistics = {
-  totalReports: 1284,
-  openReports: 9,
-  claimedReports: 4,
-  resolvedReports: 1271,
-  avgResolutionTime: 38,
-  reportsByCategory: [
-    { category: "player", count: 512 },
-    { category: "bug", count: 401 },
-    { category: "question", count: 238 },
-    { category: "general", count: 97 },
-    { category: "other", count: 36 }
-  ],
-  reportsByPriority: [
-    { priority: 0, count: 402 },
-    { priority: 1, count: 611 },
-    { priority: 2, count: 203 },
-    { priority: 3, count: 68 }
-  ],
-  adminLeaderboard: [
-    { adminId: "license:lenavogt", adminName: "Lena Vogt", claimed: 402, resolved: 391, messages: 1880 },
-    { adminId: ME.identifier, adminName: ME.name, claimed: 377, resolved: 362, messages: 1502 },
-    { adminId: "license:jayr", adminName: "Jay R.", claimed: 251, resolved: 240, messages: 930 },
-    { adminId: "license:mo", adminName: "Mo Al-Rashid", claimed: 160, resolved: 158, messages: 611 },
-    { adminId: "license:pia", adminName: "Pia Krüger", claimed: 94, resolved: 90, messages: 342 }
-  ],
-  recentActivity: [6, 5, 4, 3, 2, 1, 0].map((offset, i) => ({ date: day(offset), count: [21, 34, 18, 27, 41, 30, 12][i] }))
+// Evening-heavy RP server: few reports at night, peak around 21:00
+const HOURLY_WEIGHT = [3, 2, 1.2, 0.8, 0.5, 0.4, 0.4, 0.6, 0.9, 1.2, 1.5, 1.8, 2.2, 2.5, 2.8, 3.2, 3.8, 4.5, 5.4, 6.4, 7.2, 7.6, 6.6, 4.8]
+
+const pad = (value: number) => String(value).padStart(2, "0")
+const dayLabel = (date: Date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+
+const percentile = (values: number[], p: number) => {
+  if (values.length === 0) return null
+  const sorted = [...values].sort((a, b) => a - b)
+  return sorted[Math.max(0, Math.ceil(p * sorted.length) - 1)]
+}
+
+const summary = (values: number[]) => ({ median: percentile(values, 0.5), p90: percentile(values, 0.9), count: values.length })
+
+export const generateStatistics = (range: StatsRange): Statistics => {
+  const random = seeded(range.length * 7919 + 17)
+  const now = new Date()
+  const days = { today: 1, "7d": 7, "30d": 30, "90d": 90, all: 240 }[range]
+  const bucket = range === "today" ? "hour" : range === "all" ? "week" : "day"
+
+  // Durations drawn from a long-tailed distribution like real support work
+  const firstResponse = () => 40 + Math.pow(random(), 2.4) * 2400
+  const resolution = () => 300 + Math.pow(random(), 2.2) * 21600
+
+  const buildPeriod = (scale: number) => {
+    const created = Math.round(38 * days * scale * (range === "today" ? now.getHours() / 24 + 0.1 : 1))
+    const firstValues = Array.from({ length: Math.round(created * 0.82) }, () => firstResponse() * (scale > 1 ? 1.15 : 1))
+    const resolutionValues = Array.from({ length: Math.round(created * 0.93) }, () => resolution() * (scale > 1 ? 1.1 : 1))
+    return {
+      from: Math.floor(Date.now() / 1000) - (range === "today" ? now.getHours() * 3600 : days * 86400),
+      to: Math.floor(Date.now() / 1000),
+      created,
+      resolved: resolutionValues.length,
+      firstResponse: summary(firstValues),
+      resolution: summary(resolutionValues)
+    }
+  }
+
+  const series = []
+  let backlog = 11
+  const points = range === "today" ? now.getHours() + 1 : bucket === "week" ? Math.ceil(days / 7) : days
+  for (let i = points - 1; i >= 0; i--) {
+    const date = new Date(now)
+    let created: number
+    if (range === "today") {
+      date.setHours(now.getHours() - i, 0, 0, 0)
+      created = Math.round(HOURLY_WEIGHT[date.getHours()] * (0.7 + random() * 0.6))
+    } else {
+      date.setDate(now.getDate() - i * (bucket === "week" ? 7 : 1))
+      const weekend = date.getDay() === 0 || date.getDay() === 6 ? 1.35 : 1
+      created = Math.round(38 * weekend * (0.75 + random() * 0.5) * (bucket === "week" ? 7 : 1))
+    }
+    const resolved = Math.max(0, Math.round(created * (range === "today" ? 0.55 + random() * 0.7 : 0.85 + random() * 0.25)))
+    backlog = Math.max(0, backlog + created - resolved)
+    series.push({
+      date: range === "today" ? `${dayLabel(date)} ${pad(date.getHours())}:00` : dayLabel(date),
+      created,
+      resolved,
+      backlog,
+      firstResponseMedian: created ? 120 + random() * 360 : null,
+      resolutionMedian: resolved ? 1200 + random() * 2400 : null
+    })
+  }
+
+  const current = buildPeriod(1)
+
+  return {
+    range,
+    bucket,
+    generatedAt: Math.floor(Date.now() / 1000),
+    snapshot: { open: 6, claimed: 3, oldestOpenAt: Math.floor(Date.now() / 1000) - 1500 * 60 },
+    current,
+    previous: range === "all" ? null : buildPeriod(1.12),
+    series,
+    hours: HOURLY_WEIGHT.map((weight, hour) => ({
+      hour,
+      created: Math.round(weight * days * 1.6),
+      // Slow replies at night and at peak, when few staff are around per report
+      firstResponseMedian: 150 + (hour < 7 ? 900 : 0) + (weight > 6 ? 420 : 0) + random() * 120
+    })),
+    categories: [
+      { category: "player", count: Math.round(current.created * 0.4) },
+      { category: "bug", count: Math.round(current.created * 0.31) },
+      { category: "question", count: Math.round(current.created * 0.18) },
+      { category: "general", count: Math.round(current.created * 0.08) },
+      { category: "other", count: Math.round(current.created * 0.03) }
+    ],
+    priorities: [
+      { priority: 3, count: Math.round(current.created * 0.05), resolutionMedian: 780 },
+      { priority: 2, count: Math.round(current.created * 0.16), resolutionMedian: 1500 },
+      { priority: 1, count: Math.round(current.created * 0.47), resolutionMedian: 2280 },
+      { priority: 0, count: Math.round(current.created * 0.32), resolutionMedian: 3900 }
+    ],
+    resolutions: Array.from({ length: Math.min(600, current.resolved) }, () => {
+      const priority = random() < 0.05 ? 3 : random() < 0.2 ? 2 : random() < 0.6 ? 1 : 0
+      return {
+        createdAt: Math.floor(Date.now() / 1000 - random() * days * 86400 * (range === "today" ? now.getHours() / 24 : 1)),
+        seconds: resolution() * (priority === 3 ? 0.4 : priority === 2 ? 0.7 : 1),
+        priority
+      }
+    }),
+    staff: [
+      { adminId: "license:lenavogt", adminName: "Lena Vogt", handled: 0.29, resolved: 0.3, messages: 4.1, fr: 170, res: 1320 },
+      { adminId: ME.identifier, adminName: ME.name, handled: 0.26, resolved: 0.27, messages: 3.4, fr: 220, res: 1680 },
+      { adminId: "license:jayr", adminName: "Jay R.", handled: 0.19, resolved: 0.18, messages: 2.2, fr: 340, res: 2460 },
+      { adminId: "license:mo", adminName: "Mo Al-Rashid", handled: 0.15, resolved: 0.15, messages: 1.8, fr: 260, res: 1980 },
+      { adminId: "license:pia", adminName: "Pia Krüger", handled: 0.08, resolved: 0.07, messages: 0.9, fr: 610, res: 3240 }
+    ].map(({ fr, res, handled, resolved, messages, ...person }) => ({
+      ...person,
+      handled: Math.round(current.created * handled),
+      resolved: Math.round(current.resolved * resolved),
+      messages: Math.round(current.created * messages * 0.6),
+      firstResponseMedian: fr,
+      resolutionMedian: res
+    }))
+  }
 }
 
 // 3 seconds of a quiet tone, so the voice player has something to load

@@ -6,7 +6,7 @@ import type { Message, Report, ReportNote, PlayerNote } from "@/types"
 import locales from "./locales.json"
 import {
   ALL_REPORTS, ARCHIVE, CATEGORIES, INVENTORY, ITEM_LIST, ME, MY_REPORTS, PRIORITIES,
-  REPORT_NOTES, STATISTICS, createVoiceSample, playerHistory
+  REPORT_NOTES, createVoiceSample, generateStatistics, playerHistory
 } from "./data"
 
 type Payload = Record<string, unknown> | undefined
@@ -206,7 +206,10 @@ const handlers: Record<string, (data: Payload) => void> = {
 
   deletePlayerNote: (data) => emit("PLAYER_NOTE_DELETED", { noteId: Number(data?.noteId), playerId: "" }),
 
-  getStatistics: () => emit("SET_STATISTICS", structuredClone(STATISTICS), 400),
+  getStatistics: (data) => {
+    const range = (["today", "7d", "30d", "90d", "all"] as const).find((r) => r === data?.range) ?? "30d"
+    emit("SET_STATISTICS", generateStatistics(range), 450)
+  },
 
   getPlayerInventory: (data) =>
     emit("SET_PLAYER_INVENTORY", {

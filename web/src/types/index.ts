@@ -141,29 +141,58 @@ export interface PlayerHistory {
   identifiers?: PlayerIdentifiers
 }
 
-export interface AdminStats {
-  adminId: string
-  adminName: string
-  claimed: number
-  resolved: number
-  messages: number
-}
+export type StatsRange = "today" | "7d" | "30d" | "90d" | "all"
 
-export interface CategoryStats {
-  category: string
+/** Durations in seconds; null when nothing was measured in the period */
+export interface DurationSummary {
+  median: number | null
+  p90: number | null
   count: number
 }
 
+export interface StatsPeriod {
+  from: number
+  to: number
+  created: number
+  resolved: number
+  firstResponse: DurationSummary
+  resolution: DurationSummary
+}
+
+export interface StatsBucket {
+  /** "YYYY-MM-DD", or "YYYY-MM-DD HH:00" for the today range */
+  date: string
+  created: number
+  resolved: number
+  backlog: number
+  firstResponseMedian?: number | null
+  resolutionMedian?: number | null
+}
+
+export interface StaffStats {
+  adminId: string
+  adminName: string
+  handled: number
+  resolved: number
+  messages: number
+  firstResponseMedian?: number | null
+  resolutionMedian?: number | null
+}
+
 export interface Statistics {
-  totalReports: number
-  openReports: number
-  claimedReports: number
-  resolvedReports: number
-  avgResolutionTime: number
-  reportsByCategory: CategoryStats[]
-  reportsByPriority: { priority: number; count: number }[]
-  adminLeaderboard: AdminStats[]
-  recentActivity: { date: string; count: number }[]
+  range: StatsRange
+  bucket: "hour" | "day" | "week"
+  generatedAt: number
+  snapshot: { open: number; claimed: number; oldestOpenAt?: number | null }
+  current: StatsPeriod
+  /** Same elapsed time one period earlier, missing for "all" */
+  previous?: StatsPeriod | null
+  series: StatsBucket[]
+  hours: { hour: number; created: number; firstResponseMedian?: number | null }[]
+  categories: { category: string; count: number }[]
+  priorities: { priority: number; count: number; resolutionMedian?: number | null }[]
+  resolutions: { createdAt: number; seconds: number; priority: number }[]
+  staff: StaffStats[]
 }
 
 // Inventory Management Types

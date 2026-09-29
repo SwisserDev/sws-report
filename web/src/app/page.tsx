@@ -9,7 +9,7 @@ import { Header } from "@/components/layout/Header"
 import { Notifications } from "@/components/layout/Notifications"
 import { Footer } from "@/components/layout/Footer"
 import { ReportList, ReportDetail, ReportCreate } from "@/components/report"
-import { StatisticsPanel } from "@/components/report/StatisticsPanel"
+import { StatisticsPanel } from "@/components/stats/StatisticsPanel"
 import { cn } from "@/lib/utils"
 
 export default function Home() {

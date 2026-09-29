@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import type { Report, Message, PlayerData, PlayerView, CategoryConfig, PriorityConfig, Notification, ReportFilter, ReportNote, PlayerNote, PlayerHistory, Statistics, InventoryItem, InventoryItemInfo, InventoryChangeLog } from "@/types"
+import type { Report, Message, PlayerData, PlayerView, CategoryConfig, PriorityConfig, Notification, ReportFilter, ReportNote, PlayerNote, PlayerHistory, Statistics, StatsRange, InventoryItem, InventoryItemInfo, InventoryChangeLog } from "@/types"
 import { generateId } from "@/lib/utils"
 
 interface InventoryState {
@@ -45,6 +45,7 @@ interface ReportState {
 
   // Statistics
   statistics: Statistics | null
+  statsRange: StatsRange
 
   // Inventory
   inventory: Record<number, InventoryState>
@@ -92,6 +93,7 @@ interface ReportState {
   removePlayerNote: (playerId: string, noteId: number) => void
   setPlayerHistory: (history: PlayerHistory) => void
   setStatistics: (statistics: Statistics) => void
+  setStatsRange: (range: StatsRange) => void
 
   // Inventory Actions
   setInventory: (reportId: number, data: Partial<InventoryState>) => void
@@ -112,6 +114,18 @@ interface ReportState {
   getFilteredReports: () => Report[]
   getReportNotes: (reportId: number) => ReportNote[]
   getPlayerNotes: (playerId: string) => PlayerNote[]
+}
+
+const STATS_RANGE_KEY = "sws-report:stats-range"
+const STATS_RANGES: StatsRange[] = ["today", "7d", "30d", "90d", "all"]
+
+function readStoredRange(): StatsRange {
+  try {
+    const stored = window.localStorage.getItem(STATS_RANGE_KEY)
+    return STATS_RANGES.find((range) => range === stored) ?? "30d"
+  } catch {
+    return "30d"
+  }
 }
 
 type ReportLists = Pick<ReportState, "myReports" | "allReports" | "reportArchive">
@@ -148,6 +162,7 @@ export const useReportStore = create<ReportState>((set, get) => ({
   playerNotes: {},
   playerHistory: null,
   statistics: null,
+  statsRange: readStoredRange(),
   inventory: {},
   filter: {
     view: "queue",
@@ -322,6 +337,15 @@ export const useReportStore = create<ReportState>((set, get) => ({
 
   setPlayerHistory: (history) => set({ playerHistory: history }),
   setStatistics: (statistics) => set({ statistics }),
+  setStatsRange: (range) => {
+    // Per-viewer convenience only, storage can be unavailable in CEF
+    try {
+      window.localStorage.setItem(STATS_RANGE_KEY, range)
+    } catch {
+      // ignore
+    }
+    set({ statsRange: range })
+  },
 
   // Inventory Actions
   setInventory: (reportId, data) => set((state) => {

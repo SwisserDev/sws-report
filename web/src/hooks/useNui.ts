@@ -283,8 +283,8 @@ export function useNuiActions() {
     fetchNui("getReports", { filter: { status: "resolved", includeResolved: true } })
   }, [])
 
-  const getStatistics = useCallback(() => {
-    fetchNui("getStatistics")
+  const getStatistics = useCallback((range: string) => {
+    fetchNui("getStatistics", { range })
   }, [])
 
   const takeScreenshot = useCallback((reportId: number) => {

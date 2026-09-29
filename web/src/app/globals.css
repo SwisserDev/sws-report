@@ -236,14 +236,3 @@ select:focus-visible {
   white-space: pre-wrap;
   word-break: break-word;
 }
-
-/* Legacy names still used by the statistics view until it is redesigned */
-@theme inline {
-  --color-bg-card: var(--color-panel);
-  --color-bg-elevated: var(--color-raised);
-  --color-bg-tertiary: var(--color-raised);
-  --color-text-primary: var(--color-fg);
-  --color-text-secondary: var(--color-fg-muted);
-  --color-text-muted: var(--color-fg-faint);
-  --color-border: var(--color-line);
-}
