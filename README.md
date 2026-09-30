@@ -4,324 +4,276 @@
 
 [![Build](https://github.com/SwisserDev/sws-report/actions/workflows/build.yml/badge.svg)](https://github.com/SwisserDev/sws-report/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.2.0-green.svg)](https://github.com/SwisserDev/sws-report/releases)
-[![Lua](https://img.shields.io/badge/Lua-5.4-2C2D72?logo=lua&logoColor=white)](#)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](#)
-[![FiveM](https://img.shields.io/badge/FiveM-Ready-F40552)](#)
+[![Version](https://img.shields.io/badge/version-2.0.0-green.svg)](https://github.com/SwisserDev/sws-report/releases)
+[![FiveM](https://img.shields.io/badge/FiveM-standalone-F40552)](#requirements)
 
-Standalone report system for FiveM with live chat, admin tools, and Discord integration.
+In-game report and support system for FiveM. Players open a report, staff pick it up from a queue, talk to the player in a live chat and act on them without leaving the menu. No framework required.
+
+<img src="screenshots/admin-panel.png" alt="Staff view with the report queue on the left and an open report on the right" width="100%"/>
 
 </div>
 
 ---
 
-## Preview
+## What you get
 
-<table>
-  <tr>
-    <td align="center"><b>Admin View</b></td>
-    <td align="center"><b>Player View</b></td>
-  </tr>
-  <tr>
-    <td><img src="screenshots/admin_view.png" alt="Admin View" width="400"/></td>
-    <td><img src="screenshots/player_view.png" alt="Player View" width="400"/></td>
-  </tr>
-</table>
+**For players**
+- `/report` opens a menu to file a report with subject, category and description
+- Live chat with staff, screenshots and optional voice messages
+- Their own report history, active and resolved
 
-<details>
-<summary><b>More Screenshots</b></summary>
-<br>
+**For staff**
+- A queue grouped into *unclaimed*, *claimed by me* and *claimed by others*, most urgent and oldest first
+- Waiting time that turns amber, orange and red the longer nobody picks a report up, plus a marker when the player is waiting for an answer
+- Claim, resolve, set priority and delete right next to the report title
+- Teleport, bring, spectate, heal, revive, freeze, ragdoll, screenshot and kick from a toolbar under the chat; kick and delete ask for confirmation, kicks take a reason
+- Staff-only notes per report and per player, report history and identifiers of every player
+- Inventory view and editing for ox_inventory and ESX
+- Statistics with median first response and resolution times, backlog, busiest hours and a per-staff table
 
-<img src="screenshots/admin-statistics.png" alt="Statistics Dashboard" width="600"/>
-
-<table>
-  <tr>
-    <td align="center"><b>Admin Notes</b></td>
-    <td align="center"><b>Player Notes</b></td>
-  </tr>
-  <tr>
-    <td><img src="screenshots/report-admin-notes.png" alt="Admin Notes" width="300"/></td>
-    <td><img src="screenshots/report-player-notes.png" alt="Player Notes" width="300"/></td>
-  </tr>
-</table>
-</details>
+**For server owners**
+- Works with ESX, QBCore, Qbox or no framework at all
+- ACE permissions or fine-grained permission groups with inheritance
+- Discord logging for every action, screenshots and voice messages through the same webhook
+- English, German, French and Japanese included, more is a single Lua file
+- Dark and light theme, scales with the game resolution from 720p to 4K
+- Tested in Chromium 103, the browser FiveM ships (CEF 103)
 
 ---
 
-## Features
+## Screenshots
 
-- **Player Reports** - Create tickets with live chat support
-- **Voice Messages** - Record and send audio messages in chat (optional)
-- **Admin Panel** - Claim, resolve, and manage reports
-- **Permission Groups (RBAC)** - Granular permissions with inheritance (optional)
-- **Moderation Tools** - Teleport, heal, freeze, spectate, kick, screenshot
-- **Discord Integration** - Webhook logging for all events
-- **Statistics Dashboard** - Track team performance
-- **Inventory Management** - View/modify player items (ox_inventory, ESX)
-- **Multi-Language** - English & German included
-- **Dark/Light Theme** - User preference saved
+<table>
+  <tr>
+    <td width="50%"><img src="screenshots/player-view.png" alt="Player view"/><br><sub>Player view: own reports and the chat with staff</sub></td>
+    <td width="50%"><img src="screenshots/create-report.png" alt="Create a report"/><br><sub>Creating a report</sub></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/statistics.png" alt="Statistics"/><br><sub>Statistics: KPIs with comparison to the previous period</sub></td>
+    <td><img src="screenshots/statistics-details.png" alt="Statistics details"/><br><sub>Resolution times, priorities and the team table</sub></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/staff-notes.png" alt="Staff notes"/><br><sub>Staff notes, never visible to the player</sub></td>
+    <td><img src="screenshots/player-info.png" alt="Player info"/><br><sub>Player history, identifiers and player notes</sub></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/inventory.png" alt="Inventory management"/><br><sub>Inventory management</sub></td>
+    <td><img src="screenshots/kick-confirm.png" alt="Kick confirmation"/><br><sub>Kick with a reason that is shown to the player and logged</sub></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/light-theme.png" alt="Light theme"/><br><sub>Light theme</sub></td>
+    <td></td>
+  </tr>
+</table>
 
 ---
 
 ## Requirements
 
-- FiveM Server
 - [oxmysql](https://github.com/overextended/oxmysql)
-- Node.js 20+
-- [screenshot-basic](https://github.com/citizenfx/screenshot-basic) or [screencapture](https://github.com/itschip/screencapture) (optional, for screenshot features)
+- MySQL or MariaDB
+- Optional: [screenshot-basic](https://github.com/citizenfx/screenshot-basic) or [screencapture](https://github.com/itschip/screencapture) for screenshots
+- Optional: a Discord webhook for logging, screenshots and voice messages
+- Optional: ox_inventory or ESX for inventory management
 
 ---
 
-## Quick Start
+## Installation
 
-```bash
-# 1. Clone to resources
-git clone https://github.com/SwisserDev/sws-report.git resources/sws-report
+1. Download `sws-report-vX.Y.Z.zip` from [Releases](https://github.com/SwisserDev/sws-report/releases). It contains the built UI.
+   The green *Code → Download ZIP* button on GitHub does **not**, the menu would open without anything visible.
+2. Extract it to `resources/sws-report`.
+3. Import `sql/install.sql` into your database (HeidiSQL, phpMyAdmin or `mysql -u root -p your_db < sql/install.sql`).
+4. Add to `server.cfg`:
+   ```cfg
+   ensure oxmysql
+   ensure sws-report
+   ```
+5. Give your staff access, see [Permissions](#permissions).
 
-# 2. Import database
-mysql -u root -p your_database < resources/sws-report/sql/install.sql
-
-# 3. Build UI
-cd resources/sws-report/web && npm install && npm run build
-
-# 4. Add to server.cfg
-ensure oxmysql
-ensure sws-report
-
-# 5. (Optional) Enable voice messages
-mysql -u root -p your_database < resources/sws-report/sql/migrate_voice_messages.sql
-
-# 6. (Optional) Enable inventory management
-mysql -u root -p your_database < resources/sws-report/sql/migration_1.0.6_inventory_changes.sql
-
-# 7. (Optional) Enable sound notifications
-# Place notification.ogg and message.ogg in web/public/sounds/
-# Then rebuild: cd web && npm run build
-```
-
-> **Upgrading from an older version?** See [UPGRADING.md](UPGRADING.md)
+Updating from an older version: [UPGRADING.md](UPGRADING.md).
 
 ---
 
 ## Configuration
 
-Edit `config/main.lua`:
+Everything lives in `config/main.lua`. The settings you will most likely touch:
 
 ```lua
-Config.Locale = "en"              -- Language (en/de)
-Config.Command = "report"         -- Command to open UI
-Config.Cooldown = 60              -- Seconds between reports
-Config.MaxActiveReports = 3       -- Max open reports per player
+Config.Locale = "en"              -- en, de, fr, ja
+Config.Command = "report"         -- chat command, also bindable under Settings > Key Bindings
+Config.Cooldown = 60              -- seconds between two reports of the same player
+Config.MaxActiveReports = 3       -- open reports per player
 
--- Admin access (choose one or both)
 Config.AdminAcePermission = "report.admin"
-Config.AdminIdentifiers = {
-    "license:abc123...",
-    "steam:123456..."
-}
+Config.AdminIdentifiers = {}      -- e.g. { "license:abc123...", "discord:1234..." }
 
--- Discord webhook
 Config.Discord = {
     enabled = true,
-    webhook = "https://discord.com/api/webhooks/..."
+    webhook = "https://discord.com/api/webhooks/...",
+    events = { chatMessage = false }   -- every event can be switched off on its own
 }
 
--- Voice Messages (optional, requires migration)
-Config.VoiceMessages = {
-    enabled = true,
-    maxDurationSeconds = 60,
-    maxFileSizeKB = 7500
-}
-
--- Inventory Management (optional, requires migration)
-Config.Inventory = {
-    enabled = true,
-    allowedActions = { add = true, remove = true, set = true, metadata_edit = true },
-    maxItemCount = 1000
-}
-
--- Sound Notifications (optional)
-Config.Sounds = {
-    enabled = true,
-    newReport = "notification.ogg",
-    newMessage = "message.ogg",
-    volume = 0.5
-}
-
--- Screenshot Settings (optional, requires screenshot-basic or screencapture)
 Config.Screenshot = {
-    provider = "screenshot-basic",  -- "screenshot-basic" or "screencapture"
-    encoding = "jpg",               -- "jpg" | "png" | "webp" (webp only with screencapture)
-    quality = 0.85,                 -- 0.0-1.0 (screenshot-basic only)
-    autoOnCreate = false            -- Auto-screenshot when player creates report
+    provider = "screenshot-basic",  -- or "screencapture"
+    autoOnCreate = false            -- take a screenshot when a report is created
 }
 
--- Permission Groups (optional, omit for legacy full-access behavior)
-Config.Permissions = {
-    groups = {
-        moderator = {
-            label = "Moderator",
-            permissions = {
-                "view_reports", "claim_report", "resolve_report", "set_priority",
-                "send_admin_message", "view_notes", "manage_notes",
-                "teleport_to", "bring_player", "heal_player", "revive_player",
-                "spectate_player", "screenshot_player", "view_player_history",
-            }
-        },
-        admin = {
-            label = "Admin",
-            inherits = "moderator",  -- inherits all moderator permissions
-            permissions = {
-                "delete_report", "freeze_player", "ragdoll_player", "kick_player",
-                "manage_inventory", "view_statistics",
-            }
-        },
-        superadmin = {
-            label = "Super Admin",
-            inherits = "admin",
-            permissions = {}
-        }
-    },
-    aceGroups = {
-        ["report.moderator"]  = "moderator",
-        ["report.admin"]      = "admin",
-        ["report.superadmin"] = "superadmin",
-    },
-    identifierGroups = {
-        -- ["license:xxx"] = "admin",
-    }
+Config.VoiceMessages = { enabled = true, maxDurationSeconds = 60 }
+
+Config.UI = {
+    defaultTheme = "dark",
+    scale = 1.0                     -- on top of the automatic resolution scaling
 }
+
+-- Use your framework's notifications instead of the GTA feed
+Config.CustomNotify = function(source, message, type)
+    TriggerClientEvent("ox_lib:notify", source, { description = message, type = type })
+end
 ```
+
+Categories, priorities, sounds and inventory limits are in the same file with comments.
 
 ---
 
-## ACE Permissions
+## Permissions
 
-Admin access is granted through FiveM's built-in ACE system. You define the
-permissions in your `server.cfg`, then assign them to players (via their
-identifier) or to a group (via a principal). The resource itself only checks
-whether a player **is allowed** the configured ACE — it does not create any
-ACEs for you.
+Access is granted through FiveM's ACE system. The resource only *checks* ACEs, you define them in `server.cfg` above `ensure sws-report`.
+Permissions are re-checked every time the menu opens, so groups your framework assigns after character selection work without reconnecting.
 
-There are two ways to use it, depending on whether you enabled `Config.Permissions`.
+### Simple: everyone with access is a full admin
 
-### 1. Legacy mode (single admin permission)
-
-If `Config.Permissions` is left commented out, every admin gets full access.
-The only ACE that matters is `Config.AdminAcePermission` (default `report.admin`).
-
-Add the following to your `server.cfg` **above** `ensure sws-report`:
+Leave `Config.Permissions` commented out.
 
 ```cfg
-# Allow the "report.admin" ace object (deny by default elsewhere)
 add_ace group.admin report.admin allow
-
-# Option A: grant it to an existing principal/group
-# (anyone in group.admin now has full report access)
-
-# Option B: grant it directly to a specific player by identifier
 add_principal identifier.license:abc123... group.admin
-# or grant the ace straight to the identifier:
-add_ace identifier.license:abc123... report.admin allow
 ```
 
-> Replace `license:abc123...` with the player's real identifier
-> (`license:`, `steam:`, `fivem:`, `discord:` … all work).
+Listing identifiers in `Config.AdminIdentifiers` works as well and needs no ACE at all.
 
-Alternatively, you can skip ACE entirely and just list identifiers in
-`config/main.lua`:
+### Permission groups
 
-```lua
-Config.AdminIdentifiers = {
-    "license:abc123...",
-    "steam:110000123456789"
-}
-```
+Uncomment `Config.Permissions` in the config. The default setup maps three ACEs to groups, each inheriting the one before:
 
-### 2. Permission groups (RBAC)
-
-If you enabled `Config.Permissions`, the resource maps three ACE objects to
-groups (see `aceGroups` in the config):
-
-| ACE object          | Group        | Access level                          |
-|---------------------|--------------|---------------------------------------|
-| `report.moderator`  | `moderator`  | View, claim, resolve, basic mod tools |
-| `report.admin`      | `admin`      | Moderator + delete, kick, inventory…  |
-| `report.superadmin` | `superadmin` | Everything (inherits admin)           |
-
-Define the ACEs and assign them in your `server.cfg` **above** `ensure sws-report`:
+| ACE                 | Group        | Can do                                                        |
+|---------------------|--------------|---------------------------------------------------------------|
+| `report.moderator`  | `moderator`  | view, claim, resolve, priority, chat, notes, teleport, bring, heal, revive, spectate, screenshot, player history |
+| `report.admin`      | `admin`      | moderator + delete, freeze, ragdoll, kick, inventory, statistics |
+| `report.superadmin` | `superadmin` | everything                                                     |
 
 ```cfg
-# 1. Allow each report ace for its matching group
 add_ace group.moderator  report.moderator  allow
 add_ace group.admin      report.admin      allow
 add_ace group.superadmin report.superadmin allow
 
-# 2. Add your staff members to the matching group
 add_principal identifier.license:abc123... group.moderator
-add_principal identifier.license:def456... group.admin
-add_principal identifier.steam:1100001234... group.superadmin
 ```
 
-When a player holds more than one matching ACE, the resource automatically
-picks the group with the **highest** access level.
+A player with several matching ACEs gets the group with the most permissions. `identifierGroups` in the config pins a single person to a group without touching `server.cfg`.
 
-> **Tip:** Identifier-based groups in `Config.Permissions.identifierGroups`
-> take priority over ACE groups, so you can pin a single person to a group
-> without touching `server.cfg`.
+All permission names: `view_reports`, `claim_report`, `resolve_report`, `delete_report`, `set_priority`, `send_admin_message`, `view_notes`, `manage_notes`, `teleport_to`, `bring_player`, `heal_player`, `revive_player`, `freeze_player`, `spectate_player`, `screenshot_player`, `ragdoll_player`, `kick_player`, `manage_inventory`, `view_statistics`, `view_player_history`.
 
 ---
 
-## Commands & Exports
+## Statistics
 
-### Commands
-| Command | Description |
-|---------|-------------|
-| `/report` | Open report interface |
+Pick *Today*, *7 days*, *30 days*, *90 days* or *All time*. Every number is compared with the same elapsed time one period earlier (today until now vs. yesterday until the same time).
 
-### Server Exports
+| Number | Meaning |
+|--------|---------|
+| Waiting now | Open plus claimed reports right now, with the age of the oldest one |
+| Created / Resolved | Reports created and resolved in the period |
+| First response | Time from creating a report to the first chat message from staff. Median, plus the time 90% of reports were answered within |
+| Resolution | Time from creating a report to resolving it, median and 90th percentile |
+
+Medians instead of averages, because one report that sat open over night would otherwise drown out a hundred quick ones. Durations based on fewer than five reports are shown greyed out.
+
+Below that: created vs. resolved over time, reports per hour of day with the response time per hour, categories, priorities with their resolution time, one dot per resolved report, and a table per staff member. The table is sorted by name on purpose, there is no ranking.
+
+---
+
+## Commands, exports and events
+
+| Command | |
+|---------|-|
+| `/report` | Open or close the menu (name set by `Config.Command`) |
+
+**Server exports**
 ```lua
 exports["sws-report"]:IsAdmin(source)
-exports["sws-report"]:HasPermission(source, permission)
+exports["sws-report"]:HasPermission(source, "kick_player")
 exports["sws-report"]:GetPlayerGroup(source)
-exports["sws-report"]:GetReports(filter)
-exports["sws-report"]:CloseReport(reportId)
+exports["sws-report"]:GetOnlineAdmins()
+exports["sws-report"]:GetReports({ status = "open" })   -- active reports, optional filter by status/playerId
+exports["sws-report"]:GetReport(reportId)
+exports["sws-report"]:CloseReport(reportId)              -- resolves the report and updates every open menu
+exports["sws-report"]:GetPlayerHistory(identifier)
+exports["sws-report"]:GetReportNotes(reportId)
+exports["sws-report"]:GetPlayerNotes(identifier)
 exports["sws-report"]:IsInventoryAvailable()
 exports["sws-report"]:GetInventorySystemName()
 ```
 
-### Client Exports
+**Client exports**
 ```lua
 exports["sws-report"]:OpenUI()
 exports["sws-report"]:CloseUI()
+exports["sws-report"]:ToggleUI()
 exports["sws-report"]:IsUIOpen()
 ```
 
-### Events
+**Server events** (`AddEventHandler`, not networked)
 ```lua
 AddEventHandler("sws-report:onCreated", function(report) end)
-AddEventHandler("sws-report:onClaimed", function(report, adminId) end)
-AddEventHandler("sws-report:onResolved", function(report, adminId) end)
+AddEventHandler("sws-report:onClaimed", function(report, adminIdentifier) end)
+AddEventHandler("sws-report:onResolved", function(report, adminIdentifier) end) -- nil when closed via CloseReport
+AddEventHandler("sws-report:onDeleted", function(report, deletedByIdentifier) end)
 ```
+
+If you renamed the resource folder, use that name instead of `sws-report` in the exports.
+
+---
+
+## Troubleshooting
+
+**The menu opens (cursor appears) but nothing is visible.**
+The UI build is missing. The server console prints `UI build missing (web/out/index.html)` on start. Use the release zip or build the UI yourself (see below).
+
+**Staff don't see the Admin Panel tab.**
+Their ACE isn't set or doesn't match `Config.AdminAcePermission` / `aceGroups`. Set `Config.Debug = true` and check the console when they open the menu.
+
+**Reports can't be created, statistics stay empty.**
+`sql/install.sql` wasn't imported.
+
+**Old screenshots or voice messages don't load anymore.**
+They are stored on Discord's CDN. Discord signs attachment links and lets them expire after about a day when they are opened outside Discord. The originals stay in your Discord channel.
+
+---
+
+## Building the UI yourself
+
+Only needed if you change the interface. Requires Node.js 20+.
+
+```bash
+cd web
+npm ci
+npm run dev     # browser preview at http://localhost:3000 with demo data
+npm run build   # writes web/out, which FiveM loads
+```
+
+The browser preview fakes the Lua side, so every button works. Useful URL parameters: `?tab=admin&report=150`, `?tab=statistics`, `?theme=light`, `?lang=de`, `?scale=1.2`. Details and the CEF 103 rules for contributors are in [web/README.md](web/README.md).
 
 ---
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [INVENTORY.md](INVENTORY.md) | Inventory management setup, usage & custom adapters |
-| [UPGRADING.md](UPGRADING.md) | Migration guide for version upgrades |
-
----
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/thing`)
-3. Commit changes (`git commit -m "Add thing"`)
-4. Push to branch (`git push origin feature/thing`)
-5. Open a Pull Request
+| Document | |
+|----------|-|
+| [UPGRADING.md](UPGRADING.md) | Updating, database migrations |
+| [INVENTORY.md](INVENTORY.md) | Inventory management and custom inventory adapters |
+| [CHANGELOG.md](CHANGELOG.md) | What changed in each version |
+| [web/README.md](web/README.md) | Working on the UI |
 
 ---
 
@@ -329,10 +281,8 @@ AddEventHandler("sws-report:onResolved", function(report, adminId) end)
 
 [MIT](LICENSE)
 
----
-
 <div align="center">
-  <sub>Built by <a href="https://swisser.dev">SwisserDev</a></sub>
+  <sub>Made by <a href="https://swisser.dev">SwisserDev</a></sub>
   <br><br>
   <a href="https://metrics.swisser.dev">Metrics</a> &bull;
   <a href="https://win.swisser.dev">Win</a> &bull;

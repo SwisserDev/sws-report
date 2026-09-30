@@ -30,7 +30,9 @@ The system auto-detects which inventory is running. No configuration needed.
 
 ## Setup
 
-### 1. Run the Migration
+### 1. Database
+
+Fresh installs get the `inventory_changes` table from `sql/install.sql`. Upgrading from 1.0.5 or older:
 
 ```bash
 mysql -u root -p your_database < sql/migration_1.0.6_inventory_changes.sql
@@ -68,23 +70,26 @@ Config.Discord.colors.inventory = 0x9B59B6  -- Purple
 
 ## Usage
 
-1. Open a report in the admin panel
-2. Ensure the player is **online** (inventory tab only appears for online players)
-3. Click the **Inventory** tab
-4. Use the interface to view/modify items
+1. Open an active report in the admin panel (the tab needs the `manage_inventory` permission)
+2. Click the **Inventory** tab. The player has to be online, otherwise the tab says so.
+3. Search, check counts and metadata, change items
 
-### Quick Actions (Per Item)
+### Actions per item
 
 | Button | Action |
 |--------|--------|
 | `+` | Add more of this item |
-| `-` | Remove some of this item |
-| `=` | Set exact count |
-| `{...}` | Edit metadata (ox_inventory only) |
+| `−` | Remove some of this item |
+| `=` | Set an exact count |
+| `{ }` | Edit metadata as JSON (ox_inventory only) |
 
-### Adding New Items
+Items with metadata show their first values (serial, phone number, …) next to the name, hover for the full JSON.
 
-Click **Add** in the header to add an item the player doesn't have yet.
+### Adding new items
+
+**Add Item** in the toolbar opens a searchable list of every registered item, including ones the player doesn't have yet. Metadata can be passed as JSON; invalid JSON is flagged before anything is sent.
+
+Every change is written to the report timeline, the `inventory_changes` table and, if enabled, Discord.
 
 ---
 
