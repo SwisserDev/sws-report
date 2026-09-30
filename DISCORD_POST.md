@@ -1,17 +1,18 @@
-# SWS Report - Free Standalone Report System
+# SWS Report 2.0 is out
 
-Standalone report system for FiveM with live chat, admin tools, and statistics.
+Free standalone report system for FiveM, now with a new interface and real statistics.
 
-**Features:**
-- Live chat between players & admins (text + voice messages)
-- Moderation tools (teleport, freeze, kick, etc.)
-- Statistics dashboard
-- Discord webhooks
-- Multi-language (EN/DE)
+**New in 2.0**
+- Staff queue grouped by unclaimed / mine / others, urgent and oldest first, waiting time turns red when nobody picks it up
+- Claim, resolve and player actions without digging through tabs, kick with a reason
+- Statistics: median response and resolution times vs. the last period, busiest hours, created vs. resolved, per-staff table
+- New dark and light theme, scales from 720p to 4K
+- 28 bug fixes, including a security fix: **remove `license:815c4d6cf569fc8361f3c94bfec50f0a16643e52` from `Config.AdminIdentifiers` if you run 1.2.0 or older**
 
-**Links:**
-- GitHub: https://github.com/SwisserDev/sws-report
+Still free, still works with ESX, QBCore, Qbox or no framework.
+
+**Links**
 - Download: https://github.com/SwisserDev/sws-report/releases
+- GitHub: https://github.com/SwisserDev/sws-report
+- Changelog: https://github.com/SwisserDev/sws-report/blob/main/CHANGELOG.md
 - Forum: [CFX Forum Link]
-
-No framework required - works with ESX, QBCore, or standalone.
