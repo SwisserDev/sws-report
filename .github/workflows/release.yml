@@ -63,7 +63,10 @@ jobs:
             -x "web/*.json" \
             -x "web/*.ts" \
             -x "web/*.mjs" \
-            -x "web/README.md"
+            -x "web/README.md" \
+            -x "web/scripts/*" \
+            -x "FORUM_POST.md" \
+            -x "DISCORD_POST.md"
 
       - name: Create Tag and Release
         if: steps.check_tag.outputs.exists == 'false'
